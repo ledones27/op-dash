@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Search, Loader2 } from 'lucide-react'
-import AssetLogo from './AssetLogo'
+import AssetLogo, { saveAssetName } from './AssetLogo'
 import { saveCoingeckoId } from '../config'
 
 // Índices populares pré-definidos (fallback + suplemento à busca Yahoo)
@@ -142,6 +142,10 @@ export default function TickerSearch({ value, onChange, categoria, autoFocus }) 
     // Salvar mapeamento CoinGecko automaticamente
     if (item.coingeckoId) {
       saveCoingeckoId(item.symbol, item.coingeckoId)
+    }
+    // Salvar nome do ativo
+    if (item.name) {
+      saveAssetName(item.symbol, item.name)
     }
     setOpen(false)
     setResults([])

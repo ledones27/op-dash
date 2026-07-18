@@ -123,9 +123,39 @@ function Initials({ ticker, size }) {
   )
 }
 
-/** Retorna o nome da empresa a partir do cache (ou null se ainda não carregou) */
+// ─── Cache de nomes (separado dos logos) ──────────────
+
+const KNOWN_NAMES = {
+  // Cripto
+  BTC: 'Bitcoin', ETH: 'Ethereum', SOL: 'Solana', BNB: 'BNB', XRP: 'XRP',
+  AVAX: 'Avalanche', LINK: 'Chainlink', UNI: 'Uniswap', INJ: 'Injective',
+  SUI: 'Sui', ONDO: 'Ondo Finance', NEAR: 'NEAR Protocol', VIRTUAL: 'Virtuals Protocol',
+  ETHFI: 'Ether.fi', PENDLE: 'Pendle', HBAR: 'Hedera', HYPE: 'Hyperliquid',
+  TAO: 'Bittensor', VVV: 'Venice Token', XMR: 'Monero', ENA: 'Ethena',
+  SEI: 'Sei', // Commodities
+  GOLD: 'Gold Futures', SILVER: 'Silver Futures', UKOIL: 'Brent Crude Oil',
+  // Índices
+  NASDAQ: 'Nasdaq Composite', SP: 'S&P 500', '^BVSP': 'Ibovespa',
+  '^GSPC': 'S&P 500', '^IXIC': 'Nasdaq', '^DJI': 'Dow Jones',
+  SOX: 'PHLX Semiconductor',
+}
+
+const NAME_STORAGE_KEY = 'op-dash-names'
+let nameStore = {}
+try {
+  const stored = localStorage.getItem(NAME_STORAGE_KEY)
+  if (stored) nameStore = JSON.parse(stored)
+} catch { /* ignore */ }
+
+/** Salva um nome de ativo no cache */
+export function saveAssetName(ticker, name) {
+  nameStore[ticker.toUpperCase()] = name
+  try { localStorage.setItem(NAME_STORAGE_KEY, JSON.stringify(nameStore)) } catch { /* ignore */ }
+}
+
+/** Retorna o nome do ativo (cache dinâmico → Finnhub → mapa estático) */
 export function getAssetName(ticker) {
-  return logoStore[ticker]?.name || null
+  return nameStore[ticker] || logoStore[ticker]?.name || KNOWN_NAMES[ticker] || null
 }
 
 // ─── Componente com fallback em cadeia ─────────────────
