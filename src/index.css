@@ -33,20 +33,19 @@
   .negative { @apply text-accent-red; }
 }
 
-/* ─── Privacy mode: esconder valores ─────────────────── */
-.hide-values .stat-value,
-.hide-values .positive,
-.hide-values .negative,
-.hide-values [class*="font-mono"]:not(.hide-values header [class*="font-mono"]):not(nav [class*="font-mono"]) {
+/* ─── Privacy mode: esconder apenas valores em $ ─────── */
+.hide-values .v-usd {
   filter: blur(8px);
   user-select: none;
   transition: filter 0.2s ease;
 }
-.hide-values .stat-value:hover,
-.hide-values .positive:hover,
-.hide-values .negative:hover {
+.hide-values .v-usd:hover {
   filter: blur(0);
 }
+
+/* ─── Export mode: ocultar valores em $ ──────────────── */
+.export-mode .v-usd { display: none !important; }
+.export-mode [data-no-export] { display: none !important; }
 
 /* ─── React DatePicker dark theme ─────────────────────── */
 .react-datepicker-popper { z-index: 9999 !important; }

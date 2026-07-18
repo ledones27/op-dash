@@ -106,7 +106,7 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
           </div>
           {currentPrice != null && (
             <div className="ml-auto text-right">
-              <p className="text-lg font-mono font-bold text-accent-gold">{fmtPrice(currentPrice)}</p>
+              <p className="text-lg font-mono font-bold text-accent-gold v-usd">{fmtPrice(currentPrice)}</p>
               <span className="text-xs text-text-muted">Preço atual</span>
             </div>
           )}
@@ -117,7 +117,7 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="card text-center">
           <DollarSign className="w-4 h-4 text-accent-gold mx-auto mb-1" />
-          <p className={`stat-value text-lg ${stats.totalResult >= 0 ? 'positive' : 'negative'}`}>
+          <p className={`stat-value text-lg v-usd ${stats.totalResult >= 0 ? 'positive' : 'negative'}`}>
             {fmtUSD(stats.totalResult)}
           </p>
           <span className="stat-label">Resultado Total</span>
@@ -129,7 +129,7 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
         </div>
         <div className="card text-center">
           <TrendingUp className="w-4 h-4 text-accent-green mx-auto mb-1" />
-          <p className={`stat-value text-lg ${stats.unrealizedTotal >= 0 ? 'positive' : 'negative'}`}>
+          <p className={`stat-value text-lg v-usd ${stats.unrealizedTotal >= 0 ? 'positive' : 'negative'}`}>
             {stats.openCount > 0 ? fmtUSD(stats.unrealizedTotal) : '—'}
           </p>
           <span className="stat-label">PnL Aberto ({stats.openCount} pos.)</span>
@@ -146,7 +146,7 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-text-secondary">Resultado Acumulado — {ticker}</h3>
-            <span className={`stat-value text-lg ${equityData.at(-1)?.acumulado >= 0 ? 'positive' : 'negative'}`}>
+            <span className={`stat-value text-lg v-usd ${equityData.at(-1)?.acumulado >= 0 ? 'positive' : 'negative'}`}>
               {fmtUSD(equityData.at(-1)?.acumulado)}
             </span>
           </div>
@@ -211,7 +211,7 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
                     <span className="text-xs text-text-muted">{days}d</span>
                   </div>
                   <div className="flex items-center justify-between mt-2 text-sm">
-                    <span className="text-text-muted">
+                    <span className="text-text-muted v-usd">
                       <span className="font-mono">{fmtPrice(t.precoEntrada)}</span>
                       <span className="mx-1">→</span>
                       {currentPrice ? (
@@ -225,13 +225,13 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
                         {fmtPct(pnl)}
                       </span>
                       {result != null && (
-                        <span className={`ml-2 font-mono text-xs ${result >= 0 ? 'positive' : 'negative'}`}>
+                        <span className={`ml-2 font-mono text-xs v-usd ${result >= 0 ? 'positive' : 'negative'}`}>
                           ({fmtUSD(result)})
                         </span>
                       )}
                     </div>
                   </div>
-                  <div className="text-xs text-text-muted mt-1">Aporte: <span className="font-mono">{fmtUSD(t.aporte)}</span></div>
+                  <div className="text-xs text-text-muted mt-1 v-usd">Aporte: <span className="font-mono">{fmtUSD(t.aporte)}</span></div>
                 </div>
               )
             })}
@@ -274,13 +274,13 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
                           {t.operacao === 'LONG' ? 'L' : 'S'}
                         </span>
                       </td>
-                      <td className="py-2 px-2 text-right font-mono text-text-secondary">{fmtPrice(t.precoEntrada)}</td>
-                      <td className="py-2 px-2 text-right font-mono">{fmtPrice(t.precoSaida)}</td>
+                      <td className="py-2 px-2 text-right font-mono text-text-secondary v-usd">{fmtPrice(t.precoEntrada)}</td>
+                      <td className="py-2 px-2 text-right font-mono v-usd">{fmtPrice(t.precoSaida)}</td>
                       <td className={`py-2 px-2 text-right font-mono font-semibold ${(t.pnlPercent || 0) >= 0 ? 'positive' : 'negative'}`}>
                         {fmtPct(t.pnlPercent)}
                       </td>
-                      <td className="py-2 px-2 text-right font-mono text-text-secondary">{fmtUSD(t.aporte)}</td>
-                      <td className={`py-2 px-2 text-right font-mono font-semibold ${(t.resultado || 0) >= 0 ? 'positive' : 'negative'}`}>
+                      <td className="py-2 px-2 text-right font-mono text-text-secondary v-usd">{fmtUSD(t.aporte)}</td>
+                      <td className={`py-2 px-2 text-right font-mono font-semibold v-usd ${(t.resultado || 0) >= 0 ? 'positive' : 'negative'}`}>
                         {fmtUSD(t.resultado)}
                       </td>
                       <td className="py-2 pl-2 text-right font-mono text-text-muted">{t.duracao ?? '—'}</td>

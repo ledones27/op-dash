@@ -38,6 +38,7 @@ export default function Overview({ resultados, openPositions, prices }) {
       value: fmtUSD(total?.resultadoTotal),
       colorClass: total?.resultadoTotal >= 0 ? 'positive' : 'negative',
       icon: DollarSign,
+      isUsd: true,
     },
     {
       label: 'Win Rate',
@@ -57,12 +58,14 @@ export default function Overview({ resultados, openPositions, prices }) {
       value: fmtUSD(total?.expectancia),
       sub: 'por trade',
       icon: Award,
+      isUsd: true,
     },
     {
       label: 'Capital Alocado',
       value: fmtUSD(total?.capitalAlocado),
       sub: `${total?.tradesFechados + total?.tradesAbertos} trades total`,
       icon: DollarSign,
+      isUsd: true,
     },
     {
       label: 'Duração Média',
@@ -230,12 +233,12 @@ export default function Overview({ resultados, openPositions, prices }) {
                   <td className="text-right py-3 px-2 font-mono negative">{fmtPct(r.mediaPerda)}</td>
                   <td className="text-right py-3 px-2 font-mono">{r.payoffRatio?.toFixed(2) ?? '—'}</td>
                   <td className="text-right py-3 px-2 font-mono text-accent-blue">{r.profitFactor?.toFixed(2) ?? '—'}</td>
-                  <td className={`text-right py-3 px-2 font-mono ${r.resultadoTotal >= 0 ? 'positive' : 'negative'}`}>
+                  <td className={`text-right py-3 px-2 font-mono v-usd ${r.resultadoTotal >= 0 ? 'positive' : 'negative'}`}>
                     {fmtUSD(r.resultadoTotal)}
                   </td>
-                  <td className="text-right py-3 px-2 font-mono">{fmtUSD(r.capitalAlocado)}</td>
+                  <td className="text-right py-3 px-2 font-mono v-usd">{fmtUSD(r.capitalAlocado)}</td>
                   <td className="text-right py-3 px-2 font-mono">{fmtPct(r.roi)}</td>
-                  <td className="text-right py-3 px-2 font-mono">{fmtUSD(r.expectancia)}</td>
+                  <td className="text-right py-3 px-2 font-mono v-usd">{fmtUSD(r.expectancia)}</td>
                   <td className="text-right py-3 pl-2 font-mono">
                     {r.duracaoMedia != null ? `${Math.round(r.duracaoMedia)}d` : '—'}
                   </td>

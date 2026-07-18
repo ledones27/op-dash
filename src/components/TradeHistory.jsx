@@ -210,10 +210,10 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                       )}
                     </span>
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono text-text-secondary">
+                  <td className="py-2.5 px-2 text-right font-mono text-text-secondary v-usd">
                     {fmtPrice(t.precoEntrada)}
                   </td>
-                  <td className={`py-2.5 px-2 text-right font-mono ${exit.live ? 'text-accent-gold' : ''}`}>
+                  <td className={`py-2.5 px-2 text-right font-mono v-usd ${exit.live ? 'text-accent-gold' : ''}`}>
                     {exit.value}
                   </td>
                   <td className={`py-2.5 px-2 text-right font-mono font-semibold ${
@@ -221,10 +221,10 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                   }`}>
                     {fmtPct(t.pnlPercent)}
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono text-text-secondary">
+                  <td className="py-2.5 px-2 text-right font-mono text-text-secondary v-usd">
                     {fmtUSD(t.aporte)}
                   </td>
-                  <td className={`py-2.5 px-2 text-right font-mono font-semibold ${
+                  <td className={`py-2.5 px-2 text-right font-mono font-semibold v-usd ${
                     t.resultado == null ? '' : t.resultado >= 0 ? 'positive' : 'negative'
                   }`}>
                     {fmtUSD(t.resultado)}

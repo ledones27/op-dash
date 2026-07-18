@@ -19,9 +19,9 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
     setExporting(true)
     try {
       const html2canvas = (await import('html2canvas')).default
-      // Esconder botões de ação durante captura
-      const actionBtns = captureRef.current.querySelectorAll('[data-no-export]')
-      actionBtns.forEach(el => el.style.display = 'none')
+
+      // Adicionar classe export-mode (esconde .v-usd e [data-no-export])
+      captureRef.current.classList.add('export-mode')
 
       const canvas = await html2canvas(captureRef.current, {
         backgroundColor: '#0a0e17',
@@ -30,7 +30,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
         logging: false,
       })
 
-      actionBtns.forEach(el => el.style.display = '')
+      captureRef.current.classList.remove('export-mode')
 
       const link = document.createElement('a')
       link.download = `Posicoes_Abertas_${new Date().toISOString().slice(0, 10)}.png`
@@ -39,6 +39,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
     } catch (err) {
       console.error('Export error:', err)
     } finally {
+      captureRef.current?.classList.remove('export-mode')
       setExporting(false)
     }
   }
@@ -67,7 +68,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
   }
 
   return (
-    <div className="space-y-4" ref={captureRef}>
+    <div className="space-y-4">
       {/* Summary bar */}
       <div className="card flex flex-wrap items-center gap-6">
         <div>
@@ -76,11 +77,11 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
         </div>
         <div>
           <span className="stat-label">Capital Alocado (Aberto)</span>
-          <p className="stat-value">{fmtUSD(totalAporte)}</p>
+          <p className="stat-value v-usd">{fmtUSD(totalAporte)}</p>
         </div>
         <div>
           <span className="stat-label">PnL Não-Realizado</span>
-          <p className={`stat-value ${totalUnrealized >= 0 ? 'positive' : 'negative'}`}>
+          <p className={`stat-value v-usd ${totalUnrealized >= 0 ? 'positive' : 'negative'}`}>
             {positionsWithPrice > 0 ? fmtUSD(totalUnrealized) : '—'}
           </p>
         </div>
@@ -104,8 +105,8 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
         </button>
       </div>
 
-      {/* Colunas por categoria */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Colunas por categoria — área capturada para export */}
+      <div ref={captureRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {CATEGORIES.map(cat => {
           const catPositions = grouped[cat.key] || []
           const catAporte = catPositions.reduce((s, p) => s + (p.aporte || 0), 0)
@@ -181,7 +182,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                           </div>
 
                           {/* Linha 2: Preços */}
-                          <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center justify-between text-xs v-usd">
                             <span className="text-text-muted font-mono">
                               {fmtPrice(p.precoEntrada)}
                               <span className="mx-1">→</span>
@@ -196,13 +197,13 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
 
                           {/* Linha 3: PnL */}
                           <div className="flex items-center justify-between text-xs mt-1">
-                            <span className="text-text-muted">
+                            <span className="text-text-muted v-usd">
                               Aporte: <span className="font-mono">{fmtUSD(p.aporte)}</span>
                             </span>
                             <span className={`font-mono font-semibold ${
                               pnl == null ? 'text-text-muted' : pnl >= 0 ? 'positive' : 'negative'
                             }`}>
-                              {fmtPct(pnl)} {result != null ? `(${fmtUSD(result)})` : ''}
+                              {fmtPct(pnl)}{result != null && <span className="v-usd"> ({fmtUSD(result)})</span>}
                             </span>
                           </div>
                         </div>
@@ -210,7 +211,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                     })}
 
                   {/* Subtotal da categoria */}
-                  <div className="border-t border-border/50 pt-2 mt-2">
+                  <div className="border-t border-border/50 pt-2 mt-2 v-usd">
                     <div className="flex justify-between text-xs text-text-muted">
                       <span>Capital:</span>
                       <span className="font-mono font-medium">{fmtUSD(catAporte)}</span>
