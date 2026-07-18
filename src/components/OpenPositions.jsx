@@ -182,7 +182,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                           </div>
 
                           {/* Linha 2: Preços */}
-                          <div className="flex items-center justify-between text-xs v-usd">
+                          <div className="flex items-center justify-between text-xs">
                             <span className="text-text-muted font-mono">
                               {fmtPrice(p.precoEntrada)}
                               <span className="mx-1">→</span>
