@@ -1,4 +1,4 @@
-import { RefreshCw, TrendingUp, BarChart3, Eye, List, Plus, LogOut } from 'lucide-react'
+import { RefreshCw, TrendingUp, BarChart3, Eye, EyeOff, List, Plus, LogOut } from 'lucide-react'
 
 const NAV_ITEMS = [
   { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
@@ -8,9 +8,9 @@ const NAV_ITEMS = [
   { id: 'history', label: 'Histórico', icon: List },
 ]
 
-export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, onNewTrade, onLogout, children }) {
+export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, onNewTrade, onLogout, hideValues, onToggleHide, children }) {
   return (
-    <div className="min-h-screen bg-bg-primary">
+    <div className={`min-h-screen bg-bg-primary ${hideValues ? 'hide-values' : ''}`}>
       {/* Header */}
       <header className="border-b border-border bg-bg-card/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6">
@@ -34,6 +34,13 @@ export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, 
                 title="Sair"
               >
                 <LogOut className="w-4 h-4" />
+              </button>
+              <button
+                onClick={onToggleHide}
+                className={`p-2 rounded-lg hover:bg-bg-hover transition-colors ${hideValues ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'}`}
+                title={hideValues ? 'Mostrar valores' : 'Esconder valores'}
+              >
+                {hideValues ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
               <button
                 onClick={onRefresh}

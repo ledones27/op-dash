@@ -33,6 +33,21 @@
   .negative { @apply text-accent-red; }
 }
 
+/* ─── Privacy mode: esconder valores ─────────────────── */
+.hide-values .stat-value,
+.hide-values .positive,
+.hide-values .negative,
+.hide-values [class*="font-mono"]:not(.hide-values header [class*="font-mono"]):not(nav [class*="font-mono"]) {
+  filter: blur(8px);
+  user-select: none;
+  transition: filter 0.2s ease;
+}
+.hide-values .stat-value:hover,
+.hide-values .positive:hover,
+.hide-values .negative:hover {
+  filter: blur(0);
+}
+
 /* ─── React DatePicker dark theme ─────────────────────── */
 .react-datepicker-popper { z-index: 9999 !important; }
 

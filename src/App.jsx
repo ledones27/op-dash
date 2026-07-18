@@ -21,6 +21,7 @@ export default function App() {
     return document.cookie.split(';').some(c => c.trim() === 'op_auth=1')
   })
   const [activeTab, setActiveTab] = useState('overview')
+  const [hideValues, setHideValues] = useState(false)
 
   // Modais
   const [tradeFormOpen, setTradeFormOpen] = useState(false)
@@ -184,6 +185,8 @@ export default function App() {
         onRefresh={ctx.refreshPrices}
         onNewTrade={handleNewTrade}
         onLogout={handleLogout}
+        hideValues={hideValues}
+        onToggleHide={() => setHideValues(v => !v)}
       >
         {renderTab()}
       </Layout>

@@ -1,4 +1,5 @@
-import { ArrowUpRight, ArrowDownRight, Loader2, Pencil, Trash2, LogOut } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { ArrowUpRight, ArrowDownRight, Loader2, Pencil, Trash2, LogOut, Camera } from 'lucide-react'
 import { calcUnrealizedPnl, calcUnrealizedResult, fmtUSD, fmtPct, fmtPrice } from '../utils/calculations'
 import AssetLogo from './AssetLogo'
 
@@ -10,6 +11,38 @@ const CATEGORIES = [
 ]
 
 export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell, onViewAsset }) {
+  const captureRef = useRef(null)
+  const [exporting, setExporting] = useState(false)
+
+  const handleExportImage = async () => {
+    if (!captureRef.current || exporting) return
+    setExporting(true)
+    try {
+      const html2canvas = (await import('html2canvas')).default
+      // Esconder botões de ação durante captura
+      const actionBtns = captureRef.current.querySelectorAll('[data-no-export]')
+      actionBtns.forEach(el => el.style.display = 'none')
+
+      const canvas = await html2canvas(captureRef.current, {
+        backgroundColor: '#0a0e17',
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      })
+
+      actionBtns.forEach(el => el.style.display = '')
+
+      const link = document.createElement('a')
+      link.download = `Posicoes_Abertas_${new Date().toISOString().slice(0, 10)}.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+    } catch (err) {
+      console.error('Export error:', err)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   const positions = trades.filter(t => t.status === 'Aberta')
 
   // Agrupar por categoria
@@ -34,9 +67,9 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" ref={captureRef}>
       {/* Summary bar */}
-      <div className="card flex flex-wrap gap-6">
+      <div className="card flex flex-wrap items-center gap-6">
         <div>
           <span className="stat-label">Posições Abertas</span>
           <p className="stat-value">{positions.length}</p>
@@ -59,6 +92,16 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
             </p>
           </div>
         )}
+        <button
+          data-no-export
+          onClick={handleExportImage}
+          disabled={exporting}
+          className="ml-auto flex items-center gap-1.5 px-3 py-2 rounded-lg bg-accent-blue/15 text-accent-blue text-sm font-semibold hover:bg-accent-blue/25 transition-colors disabled:opacity-50"
+          title="Exportar como imagem"
+        >
+          {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+          <span className="hidden sm:inline">Exportar</span>
+        </button>
       </div>
 
       {/* Colunas por categoria */}
@@ -112,7 +155,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                                 )}
                               </span>
                             </div>
-                            <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div data-no-export className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button
                                 onClick={() => onSell(p)}
                                 className="p-1 rounded hover:bg-accent-gold/20 text-text-muted hover:text-accent-gold transition-colors"
