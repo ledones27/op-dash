@@ -186,6 +186,7 @@ export default function Overview({ resultados, openPositions, prices }) {
               <th className="text-left py-3 pr-4">Categoria</th>
               <th className="text-right py-3 px-2">Fechados</th>
               <th className="text-right py-3 px-2">Abertos</th>
+              <th className="text-center py-3 px-2">V / D</th>
               <th className="text-right py-3 px-2">Win Rate</th>
               <th className="text-right py-3 px-2">Méd. Ganho</th>
               <th className="text-right py-3 px-2">Méd. Perda</th>
@@ -194,7 +195,8 @@ export default function Overview({ resultados, openPositions, prices }) {
               <th className="text-right py-3 px-2">Resultado</th>
               <th className="text-right py-3 px-2">Capital</th>
               <th className="text-right py-3 px-2">ROI</th>
-              <th className="text-right py-3 pl-2">Expectância</th>
+              <th className="text-right py-3 px-2">Expectância</th>
+              <th className="text-right py-3 pl-2">Duração Méd.</th>
             </tr>
           </thead>
           <tbody>
@@ -218,6 +220,11 @@ export default function Overview({ resultados, openPositions, prices }) {
                   </td>
                   <td className="text-right py-3 px-2 font-mono">{r.tradesFechados}</td>
                   <td className="text-right py-3 px-2 font-mono">{r.tradesAbertos}</td>
+                  <td className="text-center py-3 px-2 font-mono">
+                    <span className="positive">{r.vitorias}</span>
+                    <span className="text-text-muted"> / </span>
+                    <span className="negative">{r.derrotas}</span>
+                  </td>
                   <td className="text-right py-3 px-2 font-mono">{fmtPct(r.winRate)}</td>
                   <td className="text-right py-3 px-2 font-mono positive">{fmtPct(r.mediaGanho)}</td>
                   <td className="text-right py-3 px-2 font-mono negative">{fmtPct(r.mediaPerda)}</td>
@@ -228,7 +235,10 @@ export default function Overview({ resultados, openPositions, prices }) {
                   </td>
                   <td className="text-right py-3 px-2 font-mono">{fmtUSD(r.capitalAlocado)}</td>
                   <td className="text-right py-3 px-2 font-mono">{fmtPct(r.roi)}</td>
-                  <td className="text-right py-3 pl-2 font-mono">{fmtUSD(r.expectancia)}</td>
+                  <td className="text-right py-3 px-2 font-mono">{fmtUSD(r.expectancia)}</td>
+                  <td className="text-right py-3 pl-2 font-mono">
+                    {r.duracaoMedia != null ? `${Math.round(r.duracaoMedia)}d` : '—'}
+                  </td>
                 </tr>
               )
             })}
