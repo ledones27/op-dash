@@ -21,38 +21,47 @@ const CAT_COLORS = {
 
 function buildExportDOM(positions, prices) {
   const W = 1920, H = 1080
-  const PADDING = 32         // padding do root
-  const HEADER_H = 70        // header + margin
-  const COL_PAD = 16         // padding interno da coluna
-  const CAT_HEADER_H = 32    // header da categoria
-  const GAP = 16             // gap do grid
+  const PAD = 36
+  const GAP = 10
+  const HEADER_AREA = 64 // header height + margin
 
   const now = new Date()
   const dateStr = now.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
   const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 
-  // Agrupar — só categorias com posições
-  const grouped = {}
-  for (const cat of CATEGORIES) grouped[cat.key] = []
-  for (const p of positions) {
-    if (grouped[p.categoria]) grouped[p.categoria].push(p)
-  }
-  const activeCats = CATEGORIES.filter(cat => grouped[cat.key].length > 0)
-  const colCount = activeCats.length || 1
+  // Ordenar: por categoria (ordem CATEGORIES) depois por ativo
+  const catOrder = {}
+  CATEGORIES.forEach((c, i) => { catOrder[c.key] = i })
+  const sorted = [...positions].sort((a, b) => {
+    const co = (catOrder[a.categoria] ?? 99) - (catOrder[b.categoria] ?? 99)
+    return co !== 0 ? co : a.ativo.localeCompare(b.ativo)
+  })
 
-  // Calcular tamanho dos cards para caber tudo
-  const maxItems = Math.max(...activeCats.map(c => grouped[c.key].length))
-  const availableH = H - (PADDING * 2) - HEADER_H - (COL_PAD * 2) - CAT_HEADER_H
-  // Cada card = cardH + cardGap
-  const cardGap = maxItems > 14 ? 3 : maxItems > 10 ? 5 : 6
-  const cardH = Math.floor((availableH - (maxItems - 1) * cardGap) / maxItems)
-  // Modo compacto: 2 linhas (ticker+badge+days | prices+pnl%) se cardH < 58
-  const compact = cardH < 58
-  const fontSize = compact ? '11px' : '12px'
-  const tickerSize = compact ? '12px' : '14px'
-  const pnlSize = compact ? '12px' : '13px'
-  const cardPadV = compact ? '4px' : '8px'
-  const cardPadH = compact ? '8px' : '12px'
+  const n = sorted.length
+  // Calcular grid ideal para preencher 1920x1080
+  const contentW = W - PAD * 2
+  const contentH = H - PAD * 2 - HEADER_AREA
+  const ratio = contentW / contentH
+
+  // Encontrar cols/rows que melhor preenche o espaço
+  let bestCols = 1, bestRows = n
+  let bestWaste = Infinity
+  for (let c = 1; c <= Math.min(n, 10); c++) {
+    const r = Math.ceil(n / c)
+    const cellW = (contentW - (c - 1) * GAP) / c
+    const cellH = (contentH - (r - 1) * GAP) / r
+    // Queremos cells com aspect ratio ~2.5:1 (wide cards)
+    const cellRatio = cellW / cellH
+    const waste = Math.abs(cellRatio - 2.8) + (c * r - n) * 0.1
+    if (cellH >= 40 && waste < bestWaste) {
+      bestWaste = waste
+      bestCols = c
+      bestRows = r
+    }
+  }
+
+  const cellW = Math.floor((contentW - (bestCols - 1) * GAP) / bestCols)
+  const cellH = Math.floor((contentH - (bestRows - 1) * GAP) / bestRows)
 
   const root = document.createElement('div')
   Object.assign(root.style, {
@@ -60,214 +69,149 @@ function buildExportDOM(positions, prices) {
     width: `${W}px`, height: `${H}px`,
     background: '#0a0e17', fontFamily: "'Inter', system-ui, sans-serif",
     color: '#eaecef', display: 'flex', flexDirection: 'column',
-    padding: `${PADDING}px 40px`, boxSizing: 'border-box',
+    padding: `${PAD}px`, boxSizing: 'border-box',
   })
 
   // ─── Header ───
   const header = document.createElement('div')
   Object.assign(header.style, {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    marginBottom: '20px', flexShrink: '0',
+    marginBottom: '16px', flexShrink: '0',
   })
 
-  const left = document.createElement('div')
-  left.style.display = 'flex'
-  left.style.alignItems = 'center'
-  left.style.gap = '14px'
+  const hLeft = document.createElement('div')
+  hLeft.style.display = 'flex'
+  hLeft.style.alignItems = 'center'
+  hLeft.style.gap = '12px'
 
   const badge = document.createElement('div')
   Object.assign(badge.style, {
-    width: '36px', height: '36px', borderRadius: '8px',
+    width: '34px', height: '34px', borderRadius: '8px',
     background: 'rgba(240,185,11,0.15)', display: 'flex',
     alignItems: 'center', justifyContent: 'center',
     color: '#f0b90b', fontWeight: '800', fontSize: '14px',
   })
   badge.textContent = 'OP'
 
-  const title = document.createElement('div')
+  const titleBlock = document.createElement('div')
   const t1 = document.createElement('div')
-  Object.assign(t1.style, { fontSize: '20px', fontWeight: '700', letterSpacing: '-0.3px' })
+  Object.assign(t1.style, { fontSize: '18px', fontWeight: '700' })
   t1.textContent = 'Posições Abertas'
   const t2 = document.createElement('div')
-  Object.assign(t2.style, { fontSize: '12px', color: '#848e9c', marginTop: '2px' })
-  t2.textContent = `${positions.length} posições · ${dateStr} às ${timeStr}`
-  title.append(t1, t2)
-  left.append(badge, title)
+  Object.assign(t2.style, { fontSize: '11px', color: '#848e9c', marginTop: '1px' })
+  t2.textContent = `${n} posições · ${dateStr} às ${timeStr}`
+  titleBlock.append(t1, t2)
+  hLeft.append(badge, titleBlock)
 
-  const right = document.createElement('div')
-  Object.assign(right.style, { fontSize: '12px', color: '#848e9c', textAlign: 'right' })
-  right.textContent = 'Operações Dashboard'
-  header.append(left, right)
+  // Legenda de categorias
+  const legend = document.createElement('div')
+  legend.style.display = 'flex'
+  legend.style.gap = '16px'
+  legend.style.alignItems = 'center'
+  for (const cat of CATEGORIES) {
+    const count = sorted.filter(p => p.categoria === cat.key).length
+    if (count === 0) continue
+    const item = document.createElement('div')
+    item.style.display = 'flex'
+    item.style.alignItems = 'center'
+    item.style.gap = '6px'
+    const dot = document.createElement('div')
+    Object.assign(dot.style, {
+      width: '8px', height: '8px', borderRadius: '2px',
+      background: CAT_COLORS[cat.key].text,
+    })
+    const label = document.createElement('span')
+    Object.assign(label.style, { fontSize: '11px', color: '#848e9c' })
+    label.textContent = `${cat.key} (${count})`
+    item.append(dot, label)
+    legend.appendChild(item)
+  }
+
+  header.append(hLeft, legend)
   root.appendChild(header)
 
-  // ─── Grid colunas ───
+  // ─── Grid de cards ───
   const grid = document.createElement('div')
   Object.assign(grid.style, {
-    display: 'grid', gridTemplateColumns: `repeat(${colCount}, 1fr)`,
-    gap: `${GAP}px`, flex: '1', minHeight: '0', overflow: 'hidden',
+    display: 'grid',
+    gridTemplateColumns: `repeat(${bestCols}, 1fr)`,
+    gridTemplateRows: `repeat(${bestRows}, 1fr)`,
+    gap: `${GAP}px`,
+    flex: '1', minHeight: '0',
   })
 
-  for (const cat of activeCats) {
-    const catPositions = (grouped[cat.key] || []).sort((a, b) => a.ativo.localeCompare(b.ativo))
-    const colors = CAT_COLORS[cat.key]
+  for (const p of sorted) {
+    const colors = CAT_COLORS[p.categoria] || CAT_COLORS['Ações']
+    const currentPrice = prices[p.ativo]
+    const pnl = calcUnrealizedPnl(p, currentPrice)
+    const days = p.dataEntrada
+      ? Math.floor((Date.now() - new Date(p.dataEntrada).getTime()) / 86400000)
+      : p.duracao
+    const pnlColor = pnl == null ? '#848e9c' : pnl >= 0 ? '#0ecb81' : '#f6465d'
+    const isLong = p.operacao === 'LONG'
+    const entryStr = fmtPrice(p.precoEntrada)
+    const currentStr = currentPrice ? fmtPrice(currentPrice) : '...'
 
-    const col = document.createElement('div')
-    Object.assign(col.style, {
-      background: '#111827', border: `1px solid ${colors.border}`,
-      borderRadius: '12px', padding: `${COL_PAD}px`, display: 'flex',
-      flexDirection: 'column', overflow: 'hidden',
+    const card = document.createElement('div')
+    Object.assign(card.style, {
+      background: '#111827', borderRadius: '8px',
+      borderLeft: `3px solid ${colors.text}`,
+      padding: '8px 14px',
+      display: 'flex', flexDirection: 'column', justifyContent: 'center',
     })
 
-    // Category header
-    const catHeader = document.createElement('div')
-    Object.assign(catHeader.style, {
-      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      marginBottom: '10px', flexShrink: '0',
+    // Row 1: TICKER [badge] ............ days
+    const row1 = document.createElement('div')
+    Object.assign(row1.style, {
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      marginBottom: '4px',
     })
-    const catName = document.createElement('span')
-    Object.assign(catName.style, { fontSize: '13px', fontWeight: '600', color: colors.text })
-    catName.textContent = cat.key
-    const catCount = document.createElement('span')
-    Object.assign(catCount.style, { fontSize: '11px', color: '#848e9c' })
-    catCount.textContent = `${catPositions.length} pos.`
-    catHeader.append(catName, catCount)
-    col.appendChild(catHeader)
+    const r1Left = document.createElement('div')
+    r1Left.style.display = 'flex'
+    r1Left.style.alignItems = 'center'
+    r1Left.style.gap = '8px'
 
-    const list = document.createElement('div')
-    list.style.display = 'flex'
-    list.style.flexDirection = 'column'
-    list.style.gap = `${cardGap}px`
-    list.style.overflow = 'hidden'
+    const ticker = document.createElement('span')
+    Object.assign(ticker.style, { fontFamily: 'monospace', fontWeight: '700', fontSize: '14px' })
+    ticker.textContent = p.ativo
 
-    for (const p of catPositions) {
-      const currentPrice = prices[p.ativo]
-      const pnl = calcUnrealizedPnl(p, currentPrice)
-      const days = p.dataEntrada
-        ? Math.floor((Date.now() - new Date(p.dataEntrada).getTime()) / 86400000)
-        : p.duracao
-      const pnlColor = pnl == null ? '#848e9c' : pnl >= 0 ? '#0ecb81' : '#f6465d'
-      const isLong = p.operacao === 'LONG'
-      const entryStr = fmtPrice(p.precoEntrada)
-      const currentStr = currentPrice ? fmtPrice(currentPrice) : '...'
+    const opBadge = document.createElement('span')
+    Object.assign(opBadge.style, {
+      fontSize: '10px', fontWeight: '600', padding: '1px 6px',
+      borderRadius: '3px', lineHeight: '1.4',
+      background: isLong ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)',
+      color: isLong ? '#0ecb81' : '#f6465d',
+    })
+    opBadge.textContent = isLong ? '↑ L' : '↓ S'
 
-      const card = document.createElement('div')
-      Object.assign(card.style, {
-        background: colors.bg, borderRadius: '6px',
-        padding: `${cardPadV} ${cardPadH}`,
-      })
+    r1Left.append(ticker, opBadge)
 
-      if (compact) {
-        // ── Layout compacto: 2 linhas ──
-        // Linha 1: TICKER [badge] ............ days
-        const row1 = document.createElement('div')
-        Object.assign(row1.style, {
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          marginBottom: '3px',
-        })
-        const r1Left = document.createElement('div')
-        r1Left.style.display = 'flex'
-        r1Left.style.alignItems = 'center'
-        r1Left.style.gap = '6px'
+    const daysSpan = document.createElement('span')
+    Object.assign(daysSpan.style, { fontFamily: 'monospace', fontSize: '11px', color: '#848e9c' })
+    daysSpan.textContent = `${days}d`
 
-        const ticker = document.createElement('span')
-        Object.assign(ticker.style, { fontFamily: 'monospace', fontWeight: '700', fontSize: tickerSize })
-        ticker.textContent = p.ativo
+    row1.append(r1Left, daysSpan)
 
-        const opBadge = document.createElement('span')
-        Object.assign(opBadge.style, {
-          fontSize: '9px', fontWeight: '600', padding: '1px 5px',
-          borderRadius: '3px', lineHeight: '1.3',
-          background: isLong ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)',
-          color: isLong ? '#0ecb81' : '#f6465d',
-        })
-        opBadge.textContent = isLong ? '↑ L' : '↓ S'
+    // Row 2: entry → current ............ PnL%
+    const row2 = document.createElement('div')
+    Object.assign(row2.style, {
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      fontSize: '11px',
+    })
+    const priceSpan = document.createElement('span')
+    Object.assign(priceSpan.style, { fontFamily: 'monospace', color: '#848e9c' })
+    priceSpan.innerHTML = `${entryStr} <span style="color:#5e6673">→</span> <span style="color:#eaecef">${currentStr}</span>`
 
-        r1Left.append(ticker, opBadge)
+    const pnlSpan = document.createElement('span')
+    Object.assign(pnlSpan.style, {
+      fontFamily: 'monospace', fontWeight: '700', fontSize: '13px', color: pnlColor,
+    })
+    pnlSpan.textContent = fmtPct(pnl)
 
-        const daysSpan = document.createElement('span')
-        Object.assign(daysSpan.style, { fontFamily: 'monospace', fontSize: '10px', color: '#848e9c' })
-        daysSpan.textContent = `${days}d`
+    row2.append(priceSpan, pnlSpan)
+    card.append(row1, row2)
 
-        row1.append(r1Left, daysSpan)
-
-        // Linha 2: entry → current ............ PnL%
-        const row2 = document.createElement('div')
-        Object.assign(row2.style, {
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          fontSize: '10px',
-        })
-        const priceSpan = document.createElement('span')
-        Object.assign(priceSpan.style, { fontFamily: 'monospace', color: '#848e9c' })
-        priceSpan.innerHTML = `${entryStr} <span style="color:#5e6673">→</span> <span style="color:#eaecef">${currentStr}</span>`
-
-        const pnlSpan = document.createElement('span')
-        Object.assign(pnlSpan.style, {
-          fontFamily: 'monospace', fontWeight: '600', fontSize: '11px', color: pnlColor,
-        })
-        pnlSpan.textContent = fmtPct(pnl)
-
-        row2.append(priceSpan, pnlSpan)
-        card.append(row1, row2)
-      } else {
-        // ── Layout normal: 3 linhas ──
-        // Row 1: Ticker + Badge + Days
-        const row1 = document.createElement('div')
-        Object.assign(row1.style, {
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          marginBottom: '5px',
-        })
-        const r1Left = document.createElement('div')
-        r1Left.style.display = 'flex'
-        r1Left.style.alignItems = 'center'
-        r1Left.style.gap = '8px'
-
-        const ticker = document.createElement('span')
-        Object.assign(ticker.style, { fontFamily: 'monospace', fontWeight: '700', fontSize: tickerSize })
-        ticker.textContent = p.ativo
-
-        const opBadge = document.createElement('span')
-        Object.assign(opBadge.style, {
-          fontSize: '10px', fontWeight: '600', padding: '2px 6px',
-          borderRadius: '4px',
-          background: isLong ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)',
-          color: isLong ? '#0ecb81' : '#f6465d',
-        })
-        opBadge.textContent = isLong ? '↑ L' : '↓ S'
-
-        r1Left.append(ticker, opBadge)
-
-        const daysSpan = document.createElement('span')
-        Object.assign(daysSpan.style, { fontFamily: 'monospace', fontSize: '11px', color: '#848e9c' })
-        daysSpan.textContent = `${days}d`
-
-        row1.append(r1Left, daysSpan)
-
-        // Row 2: Prices
-        const row2 = document.createElement('div')
-        Object.assign(row2.style, {
-          display: 'flex', alignItems: 'center', fontSize, marginBottom: '3px',
-        })
-        const priceSpan = document.createElement('span')
-        Object.assign(priceSpan.style, { fontFamily: 'monospace', color: '#848e9c' })
-        priceSpan.innerHTML = `${entryStr} <span style="margin:0 4px;color:#5e6673">→</span> <span style="color:#eaecef">${currentStr}</span>`
-        row2.appendChild(priceSpan)
-
-        // Row 3: PnL %
-        const row3 = document.createElement('div')
-        Object.assign(row3.style, {
-          display: 'flex', justifyContent: 'flex-end',
-          fontSize: pnlSize, fontFamily: 'monospace', fontWeight: '600', color: pnlColor,
-        })
-        row3.textContent = fmtPct(pnl)
-
-        card.append(row1, row2, row3)
-      }
-
-      list.appendChild(card)
-    }
-    col.appendChild(list)
-
-    grid.appendChild(col)
+    grid.appendChild(card)
   }
 
   root.appendChild(grid)
