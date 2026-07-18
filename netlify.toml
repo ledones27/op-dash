@@ -1,0 +1,30 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/yahoo/*"
+  to = "https://query1.finance.yahoo.com/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/twelvedata/*"
+  to = "https://api.twelvedata.com/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/finnhub/*"
+  to = "https://finnhub.io/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Migrar Dados → Supabase</title>
+  <style>
+    body { font-family: system-ui; max-width: 600px; margin: 40px auto; padding: 20px; background: #0a0e17; color: #eaecef; }
+    input { width: 100%; padding: 10px; margin: 5px 0 15px; border: 1px solid #1e2a3a; border-radius: 8px; background: #111827; color: #eaecef; font-size: 14px; }
+    button { padding: 12px 24px; background: #f0b90b; color: #0a0e17; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; }
+    button:disabled { opacity: 0.5; }
+    #log { background: #111827; border: 1px solid #1e2a3a; border-radius: 8px; padding: 15px; margin-top: 20px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+    .ok { color: #0ecb81; }
+    .err { color: #f6465d; }
+    label { font-size: 13px; color: #848e9c; }
+  </style>
+</head>
+<body>
+  <h2>Migrar Dados para o Supabase</h2>
+  <p style="color:#848e9c; font-size:13px;">Este script importa todos os trades e watchlist do seed-data.json para o seu Supabase. Rode uma vez só.</p>
+
+  <label>Supabase URL</label>
+  <input id="url" placeholder="https://xxxxx.supabase.co">
+
+  <label>Supabase Anon Key</label>
+  <input id="key" placeholder="eyJhbGciOiJIUzI1NiIs...">
+
+  <button id="btn" onclick="migrate()">Migrar Dados</button>
+  <div id="log"></div>
+
+  <script type="module">
+    import seedData from '../seed-data.json' with { type: 'json' };
+
+    window.migrate = async function() {
+      const url = document.getElementById('url').value.trim();
+      const key = document.getElementById('key').value.trim();
+      const log = document.getElementById('log');
+      const btn = document.getElementById('btn');
+
+      if (!url || !key) { log.innerHTML = '<span class="err">Preencha URL e Key</span>'; return; }
+
+      btn.disabled = true;
+      log.innerHTML = '';
+
+      const headers = {
+        'apikey': key,
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      };
+
+      // Migrar trades
+      let tradeCount = 0;
+      for (const [cat, trades] of Object.entries(seedData.trades)) {
+        for (const t of trades) {
+          const body = {
+            categoria: cat,
+            data_entrada: t.dataEntrada,
+            ativo: t.ativo,
+            preco_entrada: t.precoEntrada,
+            operacao: t.operacao,
+            data_saida: t.dataSaida || null,
+            preco_saida: t.precoSaida || null,
+            aporte: t.aporte || 100,
+          };
+
+          try {
+            const res = await fetch(`${url}/rest/v1/trades`, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify(body),
+            });
+            if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+            tradeCount++;
+            log.innerHTML += `<span class="ok">✓</span> ${cat} — ${t.ativo} (${t.operacao})\n`;
+          } catch (err) {
+            log.innerHTML += `<span class="err">✗</span> ${cat} — ${t.ativo}: ${err.message}\n`;
+          }
+        }
+      }
+
+      // Migrar watchlist
+      let watchCount = 0;
+      for (const [cat, items] of Object.entries(seedData.watchlist)) {
+        for (const item of items) {
+          const body = {
+            categoria: cat,
+            ativo: item.ativo,
+            operacao: item.operacao || null,
+          };
+
+          try {
+            const res = await fetch(`${url}/rest/v1/watchlist`, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify(body),
+            });
+            if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+            watchCount++;
+            log.innerHTML += `<span class="ok">✓</span> Watchlist ${cat} — ${item.ativo}\n`;
+          } catch (err) {
+            log.innerHTML += `<span class="err">✗</span> Watchlist ${cat} — ${item.ativo}: ${err.message}\n`;
+          }
+        }
+      }
+
+      log.innerHTML += `\n<span class="ok">Concluído: ${tradeCount} trades + ${watchCount} watchlist migrados.</span>`;
+      btn.disabled = false;
+    };
+  </script>
+</body>
+</html>

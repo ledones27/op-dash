@@ -1,0 +1,4 @@
+/api/yahoo/*  https://query1.finance.yahoo.com/:splat  200
+/api/twelvedata/*  https://api.twelvedata.com/:splat  200
+/api/finnhub/*  https://finnhub.io/:splat  200
+/*  /index.html  200
