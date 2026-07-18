@@ -86,19 +86,19 @@ function buildExportDOM(positions, prices) {
 
   const badge = document.createElement('div')
   Object.assign(badge.style, {
-    width: '34px', height: '34px', borderRadius: '8px',
+    width: '42px', height: '42px', borderRadius: '8px',
     background: 'rgba(240,185,11,0.15)', display: 'flex',
     alignItems: 'center', justifyContent: 'center',
-    color: '#f0b90b', fontWeight: '800', fontSize: '14px',
+    color: '#f0b90b', fontWeight: '800', fontSize: '18px',
   })
   badge.textContent = 'OP'
 
   const titleBlock = document.createElement('div')
   const t1 = document.createElement('div')
-  Object.assign(t1.style, { fontSize: '18px', fontWeight: '700' })
+  Object.assign(t1.style, { fontSize: '24px', fontWeight: '700' })
   t1.textContent = 'Posições Abertas'
   const t2 = document.createElement('div')
-  Object.assign(t2.style, { fontSize: '11px', color: '#848e9c', marginTop: '1px' })
+  Object.assign(t2.style, { fontSize: '14px', color: '#848e9c', marginTop: '2px' })
   t2.textContent = `${n} posições · ${dateStr} às ${timeStr}`
   titleBlock.append(t1, t2)
   hLeft.append(badge, titleBlock)
@@ -106,7 +106,7 @@ function buildExportDOM(positions, prices) {
   // Legenda de categorias
   const legend = document.createElement('div')
   legend.style.display = 'flex'
-  legend.style.gap = '16px'
+  legend.style.gap = '20px'
   legend.style.alignItems = 'center'
   for (const cat of CATEGORIES) {
     const count = sorted.filter(p => p.categoria === cat.key).length
@@ -117,11 +117,11 @@ function buildExportDOM(positions, prices) {
     item.style.gap = '6px'
     const dot = document.createElement('div')
     Object.assign(dot.style, {
-      width: '8px', height: '8px', borderRadius: '2px',
+      width: '10px', height: '10px', borderRadius: '3px',
       background: CAT_COLORS[cat.key].text,
     })
     const label = document.createElement('span')
-    Object.assign(label.style, { fontSize: '11px', color: '#848e9c' })
+    Object.assign(label.style, { fontSize: '15px', color: '#848e9c' })
     label.textContent = `${cat.key} (${count})`
     item.append(dot, label)
     legend.appendChild(item)
@@ -155,8 +155,8 @@ function buildExportDOM(positions, prices) {
     const card = document.createElement('div')
     Object.assign(card.style, {
       background: '#111827', borderRadius: '8px',
-      borderLeft: `3px solid ${colors.text}`,
-      padding: '8px 14px',
+      borderLeft: `4px solid ${colors.text}`,
+      padding: '10px 16px',
       display: 'flex', flexDirection: 'column', justifyContent: 'center',
     })
 
@@ -172,13 +172,13 @@ function buildExportDOM(positions, prices) {
     r1Left.style.gap = '8px'
 
     const ticker = document.createElement('span')
-    Object.assign(ticker.style, { fontFamily: 'monospace', fontWeight: '700', fontSize: '14px' })
+    Object.assign(ticker.style, { fontFamily: 'monospace', fontWeight: '700', fontSize: '18px' })
     ticker.textContent = p.ativo
 
     const opBadge = document.createElement('span')
     Object.assign(opBadge.style, {
-      fontSize: '10px', fontWeight: '600', padding: '1px 6px',
-      borderRadius: '3px', lineHeight: '1.4',
+      fontSize: '13px', fontWeight: '600', padding: '2px 8px',
+      borderRadius: '4px', lineHeight: '1.4',
       background: isLong ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)',
       color: isLong ? '#0ecb81' : '#f6465d',
     })
@@ -187,7 +187,7 @@ function buildExportDOM(positions, prices) {
     r1Left.append(ticker, opBadge)
 
     const daysSpan = document.createElement('span')
-    Object.assign(daysSpan.style, { fontFamily: 'monospace', fontSize: '11px', color: '#848e9c' })
+    Object.assign(daysSpan.style, { fontFamily: 'monospace', fontSize: '15px', color: '#848e9c' })
     daysSpan.textContent = `${days}d`
 
     row1.append(r1Left, daysSpan)
@@ -196,7 +196,7 @@ function buildExportDOM(positions, prices) {
     const row2 = document.createElement('div')
     Object.assign(row2.style, {
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      fontSize: '11px',
+      fontSize: '14px',
     })
     const priceSpan = document.createElement('span')
     Object.assign(priceSpan.style, { fontFamily: 'monospace', color: '#848e9c' })
@@ -204,7 +204,7 @@ function buildExportDOM(positions, prices) {
 
     const pnlSpan = document.createElement('span')
     Object.assign(pnlSpan.style, {
-      fontFamily: 'monospace', fontWeight: '700', fontSize: '13px', color: pnlColor,
+      fontFamily: 'monospace', fontWeight: '700', fontSize: '17px', color: pnlColor,
     })
     pnlSpan.textContent = fmtPct(pnl)
 
