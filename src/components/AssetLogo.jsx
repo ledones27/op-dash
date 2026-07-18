@@ -51,6 +51,9 @@ function processQueue() {
       // Logo direto do Finnhub (alta qualidade)
       if (data.logo) entry.logo = data.logo
 
+      // Nome da empresa
+      if (data.name) entry.name = data.name
+
       // Domínio para fallback (IconHorse)
       if (data.weburl) {
         try {
@@ -118,6 +121,11 @@ function Initials({ ticker, size }) {
       {ticker.slice(0, 2)}
     </div>
   )
+}
+
+/** Retorna o nome da empresa a partir do cache (ou null se ainda não carregou) */
+export function getAssetName(ticker) {
+  return logoStore[ticker]?.name || null
 }
 
 // ─── Componente com fallback em cadeia ─────────────────

@@ -1,11 +1,11 @@
-import { useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   AreaChart, Area, BarChart, Bar, Cell, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid,
 } from 'recharts'
 import { ArrowLeft, ArrowUpRight, ArrowDownRight, Loader2, TrendingUp, DollarSign, Target, Clock } from 'lucide-react'
 import { calcUnrealizedPnl, calcUnrealizedResult, fmtUSD, fmtPct, fmtPrice } from '../utils/calculations'
-import AssetLogo from './AssetLogo'
+import AssetLogo, { getAssetName } from './AssetLogo'
 
 const tooltipStyle = {
   contentStyle: {
@@ -28,6 +28,17 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
 
   const categoria = assetTrades[0]?.categoria || ''
   const currentPrice = prices[ticker]
+
+  // Nome da empresa (pode carregar com delay do cache Finnhub)
+  const [assetName, setAssetName] = useState(getAssetName(ticker))
+  useEffect(() => {
+    if (assetName) return
+    const interval = setInterval(() => {
+      const name = getAssetName(ticker)
+      if (name) { setAssetName(name); clearInterval(interval) }
+    }, 500)
+    return () => clearInterval(interval)
+  }, [ticker, assetName])
 
   // Separar abertas e fechadas
   const openTrades = assetTrades.filter(t => t.status === 'Aberta')
@@ -90,6 +101,7 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
           <AssetLogo ticker={ticker} categoria={categoria} size={40} />
           <div>
             <h2 className="text-xl font-bold font-mono">{ticker}</h2>
+            {assetName && <p className="text-sm text-text-secondary">{assetName}</p>}
             <span className="text-xs text-text-muted">{categoria}</span>
           </div>
           {currentPrice != null && (
