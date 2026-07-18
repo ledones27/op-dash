@@ -172,12 +172,12 @@ function buildExportDOM(positions, prices) {
     r1Left.style.gap = '8px'
 
     const ticker = document.createElement('span')
-    Object.assign(ticker.style, { fontFamily: 'monospace', fontWeight: '700', fontSize: '18px' })
+    Object.assign(ticker.style, { fontFamily: 'monospace', fontWeight: '700', fontSize: '22px' })
     ticker.textContent = p.ativo
 
     const opBadge = document.createElement('span')
     Object.assign(opBadge.style, {
-      fontSize: '13px', fontWeight: '600', padding: '2px 8px',
+      fontSize: '15px', fontWeight: '600', padding: '3px 10px',
       borderRadius: '4px', lineHeight: '1.4',
       background: isLong ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)',
       color: isLong ? '#0ecb81' : '#f6465d',
@@ -187,7 +187,7 @@ function buildExportDOM(positions, prices) {
     r1Left.append(ticker, opBadge)
 
     const daysSpan = document.createElement('span')
-    Object.assign(daysSpan.style, { fontFamily: 'monospace', fontSize: '15px', color: '#848e9c' })
+    Object.assign(daysSpan.style, { fontFamily: 'monospace', fontSize: '18px', color: '#848e9c' })
     daysSpan.textContent = `${days}d`
 
     row1.append(r1Left, daysSpan)
@@ -196,7 +196,7 @@ function buildExportDOM(positions, prices) {
     const row2 = document.createElement('div')
     Object.assign(row2.style, {
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      fontSize: '14px',
+      fontSize: '17px',
     })
     const priceSpan = document.createElement('span')
     Object.assign(priceSpan.style, { fontFamily: 'monospace', color: '#848e9c' })
@@ -204,7 +204,7 @@ function buildExportDOM(positions, prices) {
 
     const pnlSpan = document.createElement('span')
     Object.assign(pnlSpan.style, {
-      fontFamily: 'monospace', fontWeight: '700', fontSize: '17px', color: pnlColor,
+      fontFamily: 'monospace', fontWeight: '700', fontSize: '20px', color: pnlColor,
     })
     pnlSpan.textContent = fmtPct(pnl)
 
