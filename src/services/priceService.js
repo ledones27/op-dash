@@ -1,4 +1,4 @@
-import { getCoingeckoIds, B3_TICKERS } from '../config'
+import { getCoingeckoIds, saveCoingeckoId, B3_TICKERS } from '../config'
 
 // Yahoo Finance ticker mapping
 const YAHOO_TICKERS = {
@@ -11,6 +11,11 @@ const YAHOO_TICKERS = {
   SP: '^GSPC',
 }
 
+// Cache de IDs já resolvidos nesta sessão (evita buscas repetidas)
+const resolvedIds = {}
+// Tickers que já tentamos resolver e falharam (evita retry infinito)
+const failedLookups = new Set()
+
 /**
  * Busca preços ao vivo para uma lista de posições abertas.
  * Retorna { TICKER: price }
@@ -21,14 +26,29 @@ export async function fetchLivePrices(openPositions) {
   // Classificar tickers por API (lê mapa dinâmico a cada chamada)
   const cgIds = getCoingeckoIds()
   const cryptoTickers = []
-  const yahooTickers = [] // tudo que não é cripto vai pro Yahoo
+  const yahooTickers = []
+  const unknownCrypto = [] // cripto sem ID no mapa
 
   for (const pos of openPositions) {
     const t = pos.ativo
-    if (cgIds[t]) {
+    if (cgIds[t] || resolvedIds[t]) {
       cryptoTickers.push(t)
-    } else {
+    } else if (pos.categoria === 'Cripto' && !failedLookups.has(t)) {
+      // É cripto mas não tem ID — precisa resolver
+      unknownCrypto.push(t)
+    } else if (pos.categoria !== 'Cripto') {
       yahooTickers.push(t)
+    }
+  }
+
+  // Resolver IDs desconhecidos de cripto via CoinGecko Search
+  if (unknownCrypto.length > 0) {
+    await resolveUnknownCrypto(unknownCrypto)
+    // Após resolver, mover os que foram encontrados para cryptoTickers
+    for (const t of unknownCrypto) {
+      if (resolvedIds[t]) {
+        cryptoTickers.push(t)
+      }
     }
   }
 
@@ -47,11 +67,47 @@ export async function fetchLivePrices(openPositions) {
   return prices
 }
 
+// ─── Auto-resolver IDs de cripto desconhecidos ─────────
+
+async function resolveUnknownCrypto(tickers) {
+  for (const ticker of tickers) {
+    try {
+      const res = await fetch(
+        `https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(ticker)}`
+      )
+      if (!res.ok) {
+        console.warn(`[priceService] CoinGecko search failed for ${ticker}: ${res.status}`)
+        failedLookups.add(ticker)
+        continue
+      }
+      const data = await res.json()
+      const coins = data?.coins || []
+
+      // Buscar match exato por símbolo (case-insensitive)
+      const match = coins.find(c => c.symbol?.toUpperCase() === ticker.toUpperCase())
+
+      if (match) {
+        console.log(`[priceService] Auto-resolved ${ticker} → ${match.id} (${match.name})`)
+        resolvedIds[ticker] = match.id
+        // Salvar no localStorage pra persistir
+        saveCoingeckoId(ticker, match.id)
+      } else {
+        console.warn(`[priceService] No CoinGecko match for symbol: ${ticker}`)
+        failedLookups.add(ticker)
+      }
+    } catch (err) {
+      console.warn(`[priceService] CoinGecko search error for ${ticker}:`, err.message)
+      failedLookups.add(ticker)
+    }
+  }
+}
+
 // ─── CoinGecko (Cripto) ─────────────────────────────────
 
 async function fetchCrypto(tickers) {
   const cgIds = getCoingeckoIds()
-  const ids = tickers.map(t => cgIds[t]).filter(Boolean).join(',')
+  const allIds = { ...cgIds, ...resolvedIds }
+  const ids = tickers.map(t => allIds[t]).filter(Boolean).join(',')
   if (!ids) return {}
 
   try {
@@ -63,7 +119,7 @@ async function fetchCrypto(tickers) {
 
     const prices = {}
     for (const ticker of tickers) {
-      const id = cgIds[ticker]
+      const id = allIds[ticker]
       if (data[id]?.usd) {
         prices[ticker] = data[id].usd
       }
@@ -78,24 +134,18 @@ async function fetchCrypto(tickers) {
 // ─── Yahoo Finance (Ações, Commodities, Índices) ────────
 
 function toYahooSymbol(ticker) {
-  // Mapeamentos especiais (commodities, índices)
   if (YAHOO_TICKERS[ticker]) return YAHOO_TICKERS[ticker]
-  // Ações B3 (sufixo .SA)
   if (B3_TICKERS.includes(ticker)) return `${ticker}.SA`
-  // Ações US (ticker direto)
   return ticker
 }
 
 async function fetchYahoo(tickers) {
   const prices = {}
-
-  // Yahoo permite buscar vários tickers de uma vez com o endpoint de quote
-  // Vamos buscar em lotes de 10 pra não sobrecarregar
   const batchSize = 10
+
   for (let i = 0; i < tickers.length; i += batchSize) {
     const batch = tickers.slice(i, i + batchSize)
 
-    // Buscar cada ticker individualmente via chart API (mais confiável)
     const promises = batch.map(async (ticker) => {
       const yahooSymbol = toYahooSymbol(ticker)
       try {

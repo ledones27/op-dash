@@ -36,6 +36,9 @@ const COINGECKO_BASE = {
   XMR: 'monero',
   ENA: 'ethena',
   SEI: 'sei-network',
+  CC: 'canton',
+  JTO: 'jito-governance-token',
+  KAITO: 'kaito',
 }
 
 const CG_STORAGE_KEY = 'op-dash-coingecko-ids'
