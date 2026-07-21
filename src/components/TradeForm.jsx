@@ -14,7 +14,7 @@ const emptyForm = {
   aporte: '',
   dataSaida: '',
   precoSaida: '',
-  operando: true,
+  operando: false,
   comentario: '',
 }
 
@@ -37,7 +37,7 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
         aporte: editTrade.aporte ?? '',
         dataSaida: editTrade.dataSaida || '',
         precoSaida: editTrade.precoSaida ?? '',
-        operando: editTrade.operando ?? true,
+        operando: editTrade.operando ?? false,
         comentario: editTrade.comentario || '',
       })
       setShowExit(!!(editTrade.dataSaida || editTrade.precoSaida))

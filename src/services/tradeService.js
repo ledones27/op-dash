@@ -86,7 +86,7 @@ export async function fetchWatchlist() {
         id: item.id,
         ativo: item.ativo,
         operacao: item.operacao,
-        operando: item.operando ?? true,
+        operando: item.operando ?? false,
         comentario: item.comentario || null,
       })
     }
@@ -103,7 +103,7 @@ export async function addToWatchlist(item) {
       categoria: item.categoria,
       ativo: item.ativo.toUpperCase().trim(),
       operacao: item.operacao || null,
-      operando: item.operando ?? true,
+      operando: item.operando ?? false,
       comentario: item.comentario || null,
     })
     .select()
@@ -185,7 +185,7 @@ function dbToTrade(row) {
     aporte,
     resultado,
     duracao,
-    operando: row.operando ?? true,
+    operando: row.operando ?? false,
     comentario: row.comentario || null,
   }
 }

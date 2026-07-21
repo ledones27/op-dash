@@ -210,20 +210,20 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                           <><ArrowDownRight className="w-3 h-3 mr-0.5" />S</>
                         )}
                       </span>
-                      {t.comentario && (
-                        <span className="text-[10px] text-text-muted max-w-[60px] truncate" title={t.comentario}>
-                          {t.comentario}
-                        </span>
+                      {t.operando && (
+                        <img src="/check-operando.png" alt="Operando" className="w-3.5 h-3.5" title="Operando" />
                       )}
-                      {t.operando === false && (
-                        <span className="text-[9px] text-text-muted bg-bg-hover px-1 rounded" title="Não operando">👁</span>
+                      {t.comentario && (
+                        <span className="text-text-muted cursor-help" title={t.comentario}>
+                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        </span>
                       )}
                     </div>
                   </td>
-                  <td className="py-2.5 px-2 text-right font-mono text-text-secondary v-usd">
+                  <td className="py-2.5 px-2 text-right font-mono text-text-secondary">
                     {fmtPrice(t.precoEntrada)}
                   </td>
-                  <td className={`py-2.5 px-2 text-right font-mono v-usd ${exit.live ? 'text-accent-gold' : ''}`}>
+                  <td className={`py-2.5 px-2 text-right font-mono ${exit.live ? 'text-accent-gold' : ''}`}>
                     {exit.value}
                   </td>
                   <td className={`py-2.5 px-2 text-right font-mono font-semibold ${

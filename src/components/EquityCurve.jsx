@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import {
-  AreaChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  ComposedChart, AreaChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell, CartesianGrid, ReferenceLine, Legend,
 } from 'recharts'
 import { buildEquityCurve, buildCapitalTimeline, fmtUSD, fmtDate } from '../utils/calculations'
@@ -129,7 +129,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
         </div>
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={360}>
-            <AreaChart data={chartData}>
+            <ComposedChart data={chartData}>
               <defs>
                 <linearGradient id="gradientTotal" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#ffffff" stopOpacity={0.08} />
@@ -179,7 +179,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
                   activeDot={{ r: 3, fill: color }}
                 />
               ))}
-            </AreaChart>
+            </ComposedChart>
           </ResponsiveContainer>
         ) : (
           <p className="text-text-muted text-sm text-center py-8">Sem dados neste período.</p>

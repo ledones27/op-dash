@@ -366,13 +366,13 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                                   <><ArrowDownRight className="w-3 h-3 mr-0.5" />S</>
                                 )}
                               </span>
-                              {p.comentario && (
-                                <span className="text-[10px] text-text-muted max-w-[80px] truncate" title={p.comentario}>
-                                  {p.comentario}
-                                </span>
+                              {p.operando && (
+                                <img src="/check-operando.png" alt="Operando" className="w-3.5 h-3.5" title="Operando" />
                               )}
-                              {p.operando === false && (
-                                <span className="text-[9px] text-text-muted bg-bg-hover px-1 rounded" title="Não operando">👁</span>
+                              {p.comentario && (
+                                <span className="text-text-muted cursor-help relative group/tip" title={p.comentario}>
+                                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                </span>
                               )}
                             </div>
                             <div data-no-export className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">

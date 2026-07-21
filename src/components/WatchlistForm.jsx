@@ -92,15 +92,6 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setOperando(!operando)}
-            className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-              operando ? 'bg-accent-gold border-accent-gold text-bg-primary' : 'border-border hover:border-text-muted'}`}>
-            {operando && <span className="text-xs font-bold">✓</span>}
-          </button>
-          <label className="text-sm text-text-secondary cursor-pointer" onClick={() => setOperando(!operando)}>Operando</label>
-        </div>
-
         <div>
           <label className={labelClass}>Comentário (opcional)</label>
           <input type="text" value={comentario} onChange={e => setComentario(e.target.value)}

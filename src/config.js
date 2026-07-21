@@ -36,7 +36,7 @@ const COINGECKO_BASE = {
   XMR: 'monero',
   ENA: 'ethena',
   SEI: 'sei-network',
-  CC: 'canton',
+  CC: 'canton-network',
   JTO: 'jito-governance-token',
   KAITO: 'kaito',
 }
