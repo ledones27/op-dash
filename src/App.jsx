@@ -35,6 +35,15 @@ export default function App() {
 
   const ctx = useTradeData()
 
+  const allTickers = useMemo(() => {
+    const set = new Set()
+    ctx.trades.forEach(t => t.ativo && set.add(t.ativo))
+    if (ctx.watchlist) {
+      Object.values(ctx.watchlist).forEach(items => items.forEach(i => i.ativo && set.add(i.ativo)))
+    }
+    return [...set].sort()
+  }, [ctx.trades, ctx.watchlist])
+
   const handleLogin = () => {
     // Cookie expira em 7 dias
     const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString()
@@ -121,15 +130,6 @@ export default function App() {
   // ─── Tabs ──────────────────────────────────────────────
 
   const handleViewAsset = (ticker) => setViewingAsset(ticker)
-
-  const allTickers = useMemo(() => {
-    const set = new Set()
-    ctx.trades.forEach(t => t.ativo && set.add(t.ativo))
-    if (ctx.watchlist) {
-      Object.values(ctx.watchlist).forEach(items => items.forEach(i => i.ativo && set.add(i.ativo)))
-    }
-    return [...set].sort()
-  }, [ctx.trades, ctx.watchlist])
 
   const renderTab = () => {
     if (viewingAsset) {
