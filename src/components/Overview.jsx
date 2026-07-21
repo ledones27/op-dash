@@ -22,6 +22,8 @@ const tooltipStyle = {
     fontSize: 12,
     color: '#eaecef',
   },
+  labelStyle: { color: '#eaecef' },
+  itemStyle: { color: '#eaecef' },
   cursor: { fill: 'rgba(255,255,255,0.03)' },
 }
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ArrowUpRight, ArrowDownRight, Loader2, Pencil, Trash2, LogOut, Camera } from 'lucide-react'
-import { calcUnrealizedPnl, calcUnrealizedResult, fmtUSD, fmtPct, fmtPrice } from '../utils/calculations'
+import { calcUnrealizedPnl, calcUnrealizedResult, fmtUSD, fmtPct, fmtPrice, parseLocalDate } from '../utils/calculations'
 import AssetLogo from './AssetLogo'
 
 const CATEGORIES = [
@@ -145,7 +145,7 @@ function buildExportDOM(positions, prices) {
     const currentPrice = prices[p.ativo]
     const pnl = calcUnrealizedPnl(p, currentPrice)
     const days = p.dataEntrada
-      ? Math.floor((Date.now() - new Date(p.dataEntrada).getTime()) / 86400000)
+      ? Math.floor((Date.now() - parseLocalDate(p.dataEntrada).getTime()) / 86400000)
       : p.duracao
     const pnlColor = pnl == null ? '#848e9c' : pnl >= 0 ? '#0ecb81' : '#f6465d'
     const isLong = p.operacao === 'LONG'
@@ -341,7 +341,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                       const pnl = calcUnrealizedPnl(p, currentPrice)
                       const result = calcUnrealizedResult(p, currentPrice)
                       const days = p.dataEntrada
-                        ? Math.floor((Date.now() - new Date(p.dataEntrada).getTime()) / 86400000)
+                        ? Math.floor((Date.now() - parseLocalDate(p.dataEntrada).getTime()) / 86400000)
                         : p.duracao
 
                       return (
@@ -366,6 +366,14 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                                   <><ArrowDownRight className="w-3 h-3 mr-0.5" />S</>
                                 )}
                               </span>
+                              {p.comentario && (
+                                <span className="text-[10px] text-text-muted max-w-[80px] truncate" title={p.comentario}>
+                                  {p.comentario}
+                                </span>
+                              )}
+                              {p.operando === false && (
+                                <span className="text-[9px] text-text-muted bg-bg-hover px-1 rounded" title="Não operando">👁</span>
+                              )}
                             </div>
                             <div data-no-export className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                               <button

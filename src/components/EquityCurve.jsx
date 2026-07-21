@@ -1,11 +1,24 @@
 import { useState, useMemo } from 'react'
 import {
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  BarChart, Bar, Cell, CartesianGrid, ReferenceLine,
+  AreaChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  BarChart, Bar, Cell, CartesianGrid, ReferenceLine, Legend,
 } from 'recharts'
-import { buildEquityCurve, buildCapitalTimeline, fmtUSD } from '../utils/calculations'
+import { buildEquityCurve, buildCapitalTimeline, fmtUSD, fmtDate } from '../utils/calculations'
 import StatCard from './StatCard'
 import { DollarSign, TrendingUp, AlertTriangle } from 'lucide-react'
+
+const CAT_COLORS = {
+  acoes: '#1e80ff',
+  cripto: '#f0b90b',
+  commodities: '#0ecb81',
+  indices: '#a855f7',
+}
+const CAT_LABELS = {
+  acoes: 'Ações',
+  cripto: 'Cripto',
+  commodities: 'Commodities',
+  indices: 'Índices',
+}
 
 const tooltipStyle = {
   contentStyle: {
@@ -15,6 +28,8 @@ const tooltipStyle = {
     fontSize: 12,
     color: '#eaecef',
   },
+  labelStyle: { color: '#eaecef' },
+  itemStyle: { color: '#eaecef' },
 }
 
 const PERIOD_OPTIONS = [
@@ -65,17 +80,20 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
   // Format dates for equity chart
   const chartData = curve.map(d => ({
     ...d,
-    label: new Date(d.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
+    label: fmtDate(d.date, { day: '2-digit', month: 'short' }),
   }))
 
   // Format dates for capital chart
   const capitalChartData = capitalData.timeline.map(d => ({
     ...d,
-    label: new Date(d.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
+    label: fmtDate(d.date, { day: '2-digit', month: 'short' }),
   }))
 
-  const maxVal = chartData.length > 0 ? Math.max(...chartData.map(d => d.acumulado)) : 0
-  const minVal = chartData.length > 0 ? Math.min(...chartData.map(d => d.acumulado)) : 0
+  const allVals = chartData.length > 0
+    ? chartData.flatMap(d => [d.acumulado, d.acoes, d.cripto, d.commodities, d.indices])
+    : [0]
+  const maxVal = Math.max(...allVals)
+  const minVal = Math.min(...allVals)
 
   // Capital stats (always from current open positions, not filtered)
   const currentCapital = openPositions.reduce((sum, t) => sum + (t.aporte || 0), 0)
@@ -110,12 +128,12 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
           </span>
         </div>
         {chartData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={320}>
+          <ResponsiveContainer width="100%" height={360}>
             <AreaChart data={chartData}>
               <defs>
-                <linearGradient id="gradientGreen" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#0ecb81" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="#0ecb81" stopOpacity={0} />
+                <linearGradient id="gradientTotal" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity={0.08} />
+                  <stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e2a3a" />
@@ -131,18 +149,36 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
               />
               <Tooltip
                 {...tooltipStyle}
-                formatter={(v, name) => name === 'acumulado' ? [fmtUSD(v), 'Acumulado'] : [fmtUSD(v), 'Trade']}
+                formatter={(v, name) => {
+                  const label = name === 'acumulado' ? 'Total' : (CAT_LABELS[name] || name)
+                  return [fmtUSD(v), label]
+                }}
                 labelFormatter={l => l}
+              />
+              <Legend
+                formatter={v => v === 'acumulado' ? 'Total' : (CAT_LABELS[v] || v)}
+                wrapperStyle={{ fontSize: 11, color: '#eaecef' }}
               />
               <Area
                 type="monotone"
                 dataKey="acumulado"
-                stroke="#0ecb81"
-                strokeWidth={2}
-                fill="url(#gradientGreen)"
+                stroke="#ffffff"
+                strokeWidth={2.5}
+                fill="url(#gradientTotal)"
                 dot={false}
-                activeDot={{ r: 4, fill: '#0ecb81' }}
+                activeDot={{ r: 4, fill: '#ffffff' }}
               />
+              {Object.entries(CAT_COLORS).map(([key, color]) => (
+                <Line
+                  key={key}
+                  type="monotone"
+                  dataKey={key}
+                  stroke={color}
+                  strokeWidth={1.5}
+                  dot={false}
+                  activeDot={{ r: 3, fill: color }}
+                />
+              ))}
             </AreaChart>
           </ResponsiveContainer>
         ) : (

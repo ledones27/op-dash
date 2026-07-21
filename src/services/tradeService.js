@@ -1,6 +1,12 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import seedData from '../../seed-data.json'
 
+/** Parse YYYY-MM-DD como data local (sem shift UTC) */
+function parseLocal(s) {
+  const [y, m, d] = s.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
 // ─── TRADES ──────────────────────────────────────────────
 
 export async function fetchAllTrades() {
@@ -80,6 +86,8 @@ export async function fetchWatchlist() {
         id: item.id,
         ativo: item.ativo,
         operacao: item.operacao,
+        operando: item.operando ?? true,
+        comentario: item.comentario || null,
       })
     }
   }
@@ -95,6 +103,8 @@ export async function addToWatchlist(item) {
       categoria: item.categoria,
       ativo: item.ativo.toUpperCase().trim(),
       operacao: item.operacao || null,
+      operando: item.operando ?? true,
+      comentario: item.comentario || null,
     })
     .select()
     .single()
@@ -110,6 +120,8 @@ export async function updateWatchlistItem(id, updates) {
   if (updates.categoria !== undefined) db.categoria = updates.categoria
   if (updates.ativo !== undefined) db.ativo = updates.ativo.toUpperCase().trim()
   if (updates.operacao !== undefined) db.operacao = updates.operacao || null
+  if (updates.operando !== undefined) db.operando = updates.operando
+  if (updates.comentario !== undefined) db.comentario = updates.comentario || null
 
   const { data, error } = await supabase
     .from('watchlist')
@@ -151,8 +163,8 @@ function dbToTrade(row) {
   }
 
   let duracao = null
-  const d1 = row.data_entrada ? new Date(row.data_entrada) : null
-  const d2 = row.data_saida ? new Date(row.data_saida) : null
+  const d1 = row.data_entrada ? parseLocal(row.data_entrada) : null
+  const d2 = row.data_saida ? parseLocal(row.data_saida) : null
   if (d1 && d2) {
     duracao = Math.round((d2 - d1) / 86400000)
   } else if (d1) {
@@ -173,6 +185,8 @@ function dbToTrade(row) {
     aporte,
     resultado,
     duracao,
+    operando: row.operando ?? true,
+    comentario: row.comentario || null,
   }
 }
 
@@ -186,6 +200,8 @@ function tradeToDb(trade) {
   if (trade.dataSaida !== undefined) db.data_saida = trade.dataSaida || null
   if (trade.precoSaida !== undefined) db.preco_saida = trade.precoSaida || null
   if (trade.aporte !== undefined) db.aporte = trade.aporte
+  if (trade.operando !== undefined) db.operando = trade.operando
+  if (trade.comentario !== undefined) db.comentario = trade.comentario
   return db
 }
 

@@ -1,4 +1,5 @@
-import { RefreshCw, TrendingUp, BarChart3, Eye, EyeOff, List, Plus, LogOut } from 'lucide-react'
+import { useState, useRef, useMemo } from 'react'
+import { RefreshCw, TrendingUp, BarChart3, Eye, EyeOff, List, Plus, LogOut, Search } from 'lucide-react'
 
 const NAV_ITEMS = [
   { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
@@ -8,7 +9,22 @@ const NAV_ITEMS = [
   { id: 'history', label: 'Histórico', icon: List },
 ]
 
-export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, onNewTrade, onLogout, hideValues, onToggleHide, children }) {
+export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, onNewTrade, onLogout, hideValues, onToggleHide, onViewAsset, allTickers, children }) {
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const inputRef = useRef(null)
+
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim() || !allTickers) return []
+    const q = searchQuery.toUpperCase().trim()
+    return allTickers.filter(t => t.toUpperCase().includes(q)).slice(0, 8)
+  }, [searchQuery, allTickers])
+
+  const handleSearchSelect = (ticker) => {
+    onViewAsset?.(ticker)
+    setSearchOpen(false)
+    setSearchQuery('')
+  }
   return (
     <div className={`min-h-screen bg-bg-primary ${hideValues ? 'hide-values' : ''}`}>
       {/* Header */}
@@ -20,6 +36,47 @@ export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, 
                 <span className="text-accent-gold font-bold text-sm">OP</span>
               </div>
               <h1 className="text-lg font-bold tracking-tight">Operações</h1>
+              <div className="relative ml-2">
+                {searchOpen ? (
+                  <div className="relative">
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Escape') { setSearchOpen(false); setSearchQuery('') }
+                        if (e.key === 'Enter' && searchResults.length > 0) handleSearchSelect(searchResults[0])
+                      }}
+                      onBlur={() => setTimeout(() => { setSearchOpen(false); setSearchQuery('') }, 200)}
+                      placeholder="Buscar ativo..."
+                      className="w-40 sm:w-52 px-3 py-1.5 rounded-lg bg-bg-primary border border-border text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-gold transition-colors"
+                      autoFocus
+                    />
+                    {searchResults.length > 0 && (
+                      <div className="absolute top-full left-0 mt-1 w-full bg-bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden">
+                        {searchResults.map(ticker => (
+                          <button
+                            key={ticker}
+                            onMouseDown={() => handleSearchSelect(ticker)}
+                            className="w-full text-left px-3 py-2 text-sm font-mono hover:bg-bg-hover transition-colors text-text-primary"
+                          >
+                            {ticker}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className="p-1.5 rounded-lg hover:bg-bg-hover transition-colors text-text-muted hover:text-text-primary"
+                    title="Buscar ativo"
+                  >
+                    <Search className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center gap-3">

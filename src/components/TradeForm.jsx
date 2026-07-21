@@ -12,12 +12,17 @@ const emptyForm = {
   precoEntrada: '',
   operacao: 'LONG',
   aporte: '',
+  dataSaida: '',
+  precoSaida: '',
+  operando: true,
+  comentario: '',
 }
 
 export default function TradeForm({ open, onClose, onSave, editTrade }) {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [showExit, setShowExit] = useState(false)
 
   const isEdit = !!editTrade
 
@@ -30,9 +35,15 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
         precoEntrada: editTrade.precoEntrada ?? '',
         operacao: editTrade.operacao || 'LONG',
         aporte: editTrade.aporte ?? '',
+        dataSaida: editTrade.dataSaida || '',
+        precoSaida: editTrade.precoSaida ?? '',
+        operando: editTrade.operando ?? true,
+        comentario: editTrade.comentario || '',
       })
+      setShowExit(!!(editTrade.dataSaida || editTrade.precoSaida))
     } else {
       setForm({ ...emptyForm, dataEntrada: new Date().toISOString().split('T')[0] })
+      setShowExit(false)
     }
     setError('')
   }, [editTrade, open])
@@ -48,9 +59,14 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
     if (!form.precoEntrada || Number(form.precoEntrada) <= 0) return setError('Preço de entrada inválido')
     if (!form.aporte || Number(form.aporte) <= 0) return setError('Aporte é obrigatório')
 
+    if (showExit) {
+      if (form.dataSaida && !form.precoSaida) return setError('Preço de saída é obrigatório quando há data de saída')
+      if (form.precoSaida && !form.dataSaida) return setError('Data de saída é obrigatória quando há preço de saída')
+    }
+
     setSaving(true)
     try {
-      await onSave({
+      const payload = {
         ...(isEdit ? { id: editTrade.id } : {}),
         categoria: form.categoria,
         dataEntrada: form.dataEntrada,
@@ -58,7 +74,20 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
         precoEntrada: Number(form.precoEntrada),
         operacao: form.operacao,
         aporte: Number(form.aporte),
-      })
+        operando: form.operando,
+        comentario: form.comentario.trim() || null,
+      }
+
+      if (showExit && form.dataSaida && form.precoSaida) {
+        payload.dataSaida = form.dataSaida
+        payload.precoSaida = Number(form.precoSaida)
+      } else if (showExit === false && isEdit) {
+        // If user collapsed exit section while editing, clear exit data
+        payload.dataSaida = null
+        payload.precoSaida = null
+      }
+
+      await onSave(payload)
       onClose()
     } catch (err) {
       setError(err.message || 'Erro ao salvar')
@@ -155,6 +184,72 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
               className={inputClass}
             />
           </div>
+        </div>
+
+        {/* Row 4: Saída (toggle) */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowExit(v => !v)}
+            className="text-xs text-accent-gold hover:text-accent-gold/80 transition-colors"
+          >
+            {showExit ? '▾ Ocultar saída' : '▸ Adicionar dados de saída'}
+          </button>
+        </div>
+
+        {showExit && (
+          <div className="grid grid-cols-2 gap-3 border border-border/50 rounded-lg p-3 bg-bg-card/30">
+            <div>
+              <label className={labelClass}>Data Saída</label>
+              <DateInput
+                value={form.dataSaida}
+                onChange={v => set('dataSaida', v)}
+                placeholder="Selecione a data"
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Preço Saída</label>
+              <input
+                type="number"
+                step="any"
+                value={form.precoSaida}
+                onChange={e => set('precoSaida', e.target.value)}
+                placeholder="ex: 4500.00"
+                className={inputClass}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Row 5: Operando + Comentário */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex items-center gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => set('operando', !form.operando)}
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                form.operando
+                  ? 'bg-accent-gold border-accent-gold text-bg-primary'
+                  : 'border-border hover:border-text-muted'
+              }`}
+            >
+              {form.operando && <span className="text-xs font-bold">✓</span>}
+            </button>
+            <label className="text-sm text-text-secondary cursor-pointer" onClick={() => set('operando', !form.operando)}>
+              Operando
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label className={labelClass}>Comentário (opcional)</label>
+          <input
+            type="text"
+            value={form.comentario}
+            onChange={e => set('comentario', e.target.value)}
+            placeholder="Ex: Entrada em suporte de fibo 0.618"
+            className={inputClass}
+          />
         </div>
 
         {/* Error */}

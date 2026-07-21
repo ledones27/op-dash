@@ -2,7 +2,7 @@ import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, ReferenceLine,
 } from 'recharts'
-import { buildCapitalTimeline, fmtUSD } from '../utils/calculations'
+import { buildCapitalTimeline, fmtUSD, fmtDate } from '../utils/calculations'
 import StatCard from './StatCard'
 import { DollarSign, TrendingUp, AlertTriangle } from 'lucide-react'
 
@@ -31,7 +31,7 @@ export default function CapitalAllocation({ allTrades, openPositions }) {
 
   const chartData = timeline.map(d => ({
     ...d,
-    label: new Date(d.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
+    label: fmtDate(d.date, { day: '2-digit', month: 'short' }),
   }))
 
   return (

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useTradeData } from './hooks/useTradeData'
 import LoginScreen from './components/LoginScreen'
 import Layout from './components/Layout'
@@ -122,6 +122,15 @@ export default function App() {
 
   const handleViewAsset = (ticker) => setViewingAsset(ticker)
 
+  const allTickers = useMemo(() => {
+    const set = new Set()
+    ctx.trades.forEach(t => t.ativo && set.add(t.ativo))
+    if (ctx.watchlist) {
+      Object.values(ctx.watchlist).forEach(items => items.forEach(i => i.ativo && set.add(i.ativo)))
+    }
+    return [...set].sort()
+  }, [ctx.trades, ctx.watchlist])
+
   const renderTab = () => {
     if (viewingAsset) {
       return (
@@ -187,6 +196,8 @@ export default function App() {
         onLogout={handleLogout}
         hideValues={hideValues}
         onToggleHide={() => setHideValues(v => !v)}
+        onViewAsset={handleViewAsset}
+        allTickers={allTickers}
       >
         {renderTab()}
       </Layout>

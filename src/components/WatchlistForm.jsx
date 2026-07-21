@@ -8,21 +8,26 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
   const [categoria, setCategoria] = useState('Ações')
   const [ativo, setAtivo] = useState('')
   const [operacao, setOperacao] = useState('')
+  const [operando, setOperando] = useState(true)
+  const [comentario, setComentario] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
   const isEditing = !!editItem
 
-  // Preencher campos ao editar
   useEffect(() => {
     if (editItem) {
       setCategoria(editItem.categoria || 'Ações')
       setAtivo(editItem.ativo || '')
       setOperacao(editItem.operacao || '')
+      setOperando(editItem.operando ?? true)
+      setComentario(editItem.comentario || '')
     } else {
       setCategoria('Ações')
       setAtivo('')
       setOperacao('')
+      setOperando(true)
+      setComentario('')
     }
     setError('')
   }, [editItem, open])
@@ -39,9 +44,12 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
         categoria,
         ativo: ativo.toUpperCase().trim(),
         operacao: operacao || null,
+        operando,
+        comentario: comentario.trim() || null,
       })
       setAtivo('')
       setOperacao('')
+      setComentario('')
       onClose()
     } catch (err) {
       setError(err.message || 'Erro ao salvar')
@@ -65,50 +73,44 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
 
         <div>
           <label className={labelClass}>Ativo (ticker)</label>
-          <TickerSearch
-            value={ativo}
-            onChange={setAtivo}
-            categoria={categoria}
-            autoFocus
-          />
+          <TickerSearch value={ativo} onChange={setAtivo} categoria={categoria} autoFocus />
         </div>
 
         <div>
           <label className={labelClass}>Direção (opcional)</label>
           <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setOperacao(operacao === 'LONG' ? '' : 'LONG')}
+            <button type="button" onClick={() => setOperacao(operacao === 'LONG' ? '' : 'LONG')}
               className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                operacao === 'LONG'
-                  ? 'bg-accent-green/20 text-accent-green border border-accent-green/40'
-                  : 'bg-bg-primary border border-border text-text-secondary'
-              }`}
-            >
+                operacao === 'LONG' ? 'bg-accent-green/20 text-accent-green border border-accent-green/40' : 'bg-bg-primary border border-border text-text-secondary'}`}>
               LONG
             </button>
-            <button
-              type="button"
-              onClick={() => setOperacao(operacao === 'SHORT' ? '' : 'SHORT')}
+            <button type="button" onClick={() => setOperacao(operacao === 'SHORT' ? '' : 'SHORT')}
               className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                operacao === 'SHORT'
-                  ? 'bg-accent-red/20 text-accent-red border border-accent-red/40'
-                  : 'bg-bg-primary border border-border text-text-secondary'
-              }`}
-            >
+                operacao === 'SHORT' ? 'bg-accent-red/20 text-accent-red border border-accent-red/40' : 'bg-bg-primary border border-border text-text-secondary'}`}>
               SHORT
             </button>
           </div>
         </div>
 
-        {error && (
-          <p className="text-accent-red text-sm bg-accent-red/10 px-3 py-2 rounded-lg">{error}</p>
-        )}
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={() => setOperando(!operando)}
+            className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+              operando ? 'bg-accent-gold border-accent-gold text-bg-primary' : 'border-border hover:border-text-muted'}`}>
+            {operando && <span className="text-xs font-bold">✓</span>}
+          </button>
+          <label className="text-sm text-text-secondary cursor-pointer" onClick={() => setOperando(!operando)}>Operando</label>
+        </div>
+
+        <div>
+          <label className={labelClass}>Comentário (opcional)</label>
+          <input type="text" value={comentario} onChange={e => setComentario(e.target.value)}
+            placeholder="Ex: Aguardando pullback" className={inputClass} />
+        </div>
+
+        {error && <p className="text-accent-red text-sm bg-accent-red/10 px-3 py-2 rounded-lg">{error}</p>}
 
         <div className="flex justify-end gap-3 pt-2">
-          <button type="button" onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-bg-hover transition-colors">
-            Cancelar
-          </button>
+          <button type="button" onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-bg-hover transition-colors">Cancelar</button>
           <button type="submit" disabled={saving} className="px-6 py-2.5 rounded-lg text-sm font-semibold bg-accent-gold text-bg-primary hover:bg-accent-gold/90 transition-colors disabled:opacity-50">
             {saving ? 'Salvando...' : isEditing ? 'Salvar' : 'Adicionar'}
           </button>

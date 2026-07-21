@@ -32,13 +32,21 @@ export function buildEquityCurve(allTrades) {
     .sort((a, b) => a.dataSaida.localeCompare(b.dataSaida))
 
   let cumulative = 0
+  const catCum = { 'Ações': 0, 'Cripto': 0, 'Commodities': 0, 'Índices': 0 }
+
   return closed.map(t => {
     cumulative += t.resultado
+    if (catCum[t.categoria] != null) catCum[t.categoria] += t.resultado
     return {
       date: t.dataSaida,
       resultado: t.resultado,
       acumulado: Math.round(cumulative * 100) / 100,
       ativo: t.ativo,
+      categoria: t.categoria,
+      acoes: Math.round(catCum['Ações'] * 100) / 100,
+      cripto: Math.round(catCum['Cripto'] * 100) / 100,
+      commodities: Math.round(catCum['Commodities'] * 100) / 100,
+      indices: Math.round(catCum['Índices'] * 100) / 100,
     }
   })
 }
@@ -73,6 +81,24 @@ export function buildCapitalTimeline(allTrades) {
   }
 
   return { timeline, peakCapital: maxCapital }
+}
+
+/**
+ * Converte string de data (YYYY-MM-DD) para Date em timezone local (sem deslocamento UTC).
+ */
+export function parseLocalDate(dateStr) {
+  if (!dateStr) return null
+  const [y, m, d] = dateStr.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+/**
+ * Formata data YYYY-MM-DD para exibição pt-BR sem bug de timezone.
+ */
+export function fmtDate(dateStr, opts) {
+  const dt = parseLocalDate(dateStr)
+  if (!dt) return '—'
+  return dt.toLocaleDateString('pt-BR', opts || undefined)
 }
 
 /**

@@ -4,7 +4,7 @@ import {
   ResponsiveContainer, CartesianGrid,
 } from 'recharts'
 import { ArrowLeft, ArrowUpRight, ArrowDownRight, Loader2, TrendingUp, DollarSign, Target, Clock } from 'lucide-react'
-import { calcUnrealizedPnl, calcUnrealizedResult, fmtUSD, fmtPct, fmtPrice } from '../utils/calculations'
+import { calcUnrealizedPnl, calcUnrealizedResult, fmtUSD, fmtPct, fmtPrice, fmtDate, parseLocalDate } from '../utils/calculations'
 import AssetLogo, { getAssetName } from './AssetLogo'
 
 const tooltipStyle = {
@@ -80,7 +80,7 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
         cum += t.resultado
         return {
           date: t.dataSaida,
-          label: new Date(t.dataSaida).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
+          label: fmtDate(t.dataSaida, { day: '2-digit', month: 'short' }),
           resultado: t.resultado,
           acumulado: Math.round(cum * 100) / 100,
         }
@@ -197,7 +197,7 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
               const pnl = calcUnrealizedPnl(t, currentPrice)
               const result = calcUnrealizedResult(t, currentPrice)
               const days = t.dataEntrada
-                ? Math.floor((Date.now() - new Date(t.dataEntrada).getTime()) / 86400000)
+                ? Math.floor((Date.now() - parseLocalDate(t.dataEntrada).getTime()) / 86400000)
                 : 0
               return (
                 <div key={t.id || i} className="rounded-lg px-4 py-3 bg-bg-primary border border-border">
@@ -264,10 +264,10 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
                   .map((t, i) => (
                     <tr key={t.id || i} className="border-b border-border/30 hover:bg-bg-hover/20">
                       <td className="py-2 pr-2 text-text-secondary text-xs font-mono">
-                        {t.dataEntrada ? new Date(t.dataEntrada).toLocaleDateString('pt-BR') : '—'}
+                        {fmtDate(t.dataEntrada)}
                       </td>
                       <td className="py-2 px-2 text-text-secondary text-xs font-mono">
-                        {t.dataSaida ? new Date(t.dataSaida).toLocaleDateString('pt-BR') : '—'}
+                        {fmtDate(t.dataSaida)}
                       </td>
                       <td className="py-2 px-2 text-center">
                         <span className={t.operacao === 'LONG' ? 'badge-long' : 'badge-short'}>

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { ArrowUpRight, ArrowDownRight, Filter, Plus, Download, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
-import { fmtUSD, fmtPct, fmtPrice } from '../utils/calculations'
+import { fmtUSD, fmtPct, fmtPrice, fmtDate } from '../utils/calculations'
 import AssetLogo from './AssetLogo'
 import DateInput from './DateInput'
 
@@ -184,10 +184,10 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
               return (
                 <tr key={t.id || i} className="border-b border-border/30 hover:bg-bg-hover/20 transition-colors group">
                   <td className="py-2.5 px-2 text-text-secondary text-xs font-mono">
-                    {t.dataEntrada ? new Date(t.dataEntrada).toLocaleDateString('pt-BR') : '—'}
+                    {fmtDate(t.dataEntrada)}
                   </td>
                   <td className="py-2.5 px-2 text-text-secondary text-xs font-mono">
-                    {t.dataSaida ? new Date(t.dataSaida).toLocaleDateString('pt-BR') : '—'}
+                    {fmtDate(t.dataSaida)}
                   </td>
                   <td className="py-2.5 px-2">
                     <div className="flex items-center gap-2">
@@ -202,13 +202,23 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                   </td>
                   <td className="py-2.5 px-2 text-text-muted text-xs">{t.categoria}</td>
                   <td className="py-2.5 px-2 text-center">
-                    <span className={t.operacao === 'LONG' ? 'badge-long' : 'badge-short'}>
-                      {t.operacao === 'LONG' ? (
-                        <><ArrowUpRight className="w-3 h-3 mr-0.5" />L</>
-                      ) : (
-                        <><ArrowDownRight className="w-3 h-3 mr-0.5" />S</>
+                    <div className="flex items-center justify-center gap-1.5">
+                      <span className={t.operacao === 'LONG' ? 'badge-long' : 'badge-short'}>
+                        {t.operacao === 'LONG' ? (
+                          <><ArrowUpRight className="w-3 h-3 mr-0.5" />L</>
+                        ) : (
+                          <><ArrowDownRight className="w-3 h-3 mr-0.5" />S</>
+                        )}
+                      </span>
+                      {t.comentario && (
+                        <span className="text-[10px] text-text-muted max-w-[60px] truncate" title={t.comentario}>
+                          {t.comentario}
+                        </span>
                       )}
-                    </span>
+                      {t.operando === false && (
+                        <span className="text-[9px] text-text-muted bg-bg-hover px-1 rounded" title="Não operando">👁</span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-2.5 px-2 text-right font-mono text-text-secondary v-usd">
                     {fmtPrice(t.precoEntrada)}
