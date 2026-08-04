@@ -136,6 +136,8 @@ async function fetchCrypto(tickers) {
 function toYahooSymbol(ticker) {
   if (YAHOO_TICKERS[ticker]) return YAHOO_TICKERS[ticker]
   if (B3_TICKERS.includes(ticker)) return `${ticker}.SA`
+  // Auto-detect B3 tickers: 4 letters + digit (e.g. VIVT3, PETR4, VALE3)
+  if (/^[A-Z]{4}\d{1,2}$/.test(ticker)) return `${ticker}.SA`
   return ticker
 }
 
