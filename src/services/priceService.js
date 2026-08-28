@@ -13,8 +13,9 @@ const YAHOO_TICKERS = {
 
 // Cache de IDs já resolvidos nesta sessão (evita buscas repetidas)
 const resolvedIds = {}
-// Tickers que já tentamos resolver e falharam (evita retry infinito)
-const failedLookups = new Set()
+// Tickers que já tentamos resolver e falharam (retry após 5 min)
+const failedLookups = new Map()
+const FAILED_TTL = 5 * 60 * 1000
 
 /**
  * Busca preços ao vivo para uma lista de posições abertas.
@@ -33,7 +34,7 @@ export async function fetchLivePrices(openPositions) {
     const t = pos.ativo
     if (cgIds[t] || resolvedIds[t]) {
       cryptoTickers.push(t)
-    } else if (pos.categoria === 'Cripto' && !failedLookups.has(t)) {
+    } else if (pos.categoria === 'Cripto' && (!failedLookups.has(t) || Date.now() - failedLookups.get(t) > FAILED_TTL)) {
       // É cripto mas não tem ID — precisa resolver
       unknownCrypto.push(t)
     } else if (pos.categoria !== 'Cripto') {
@@ -77,7 +78,7 @@ async function resolveUnknownCrypto(tickers) {
       )
       if (!res.ok) {
         console.warn(`[priceService] CoinGecko search failed for ${ticker}: ${res.status}`)
-        failedLookups.add(ticker)
+        failedLookups.set(ticker, Date.now())
         continue
       }
       const data = await res.json()
@@ -93,11 +94,11 @@ async function resolveUnknownCrypto(tickers) {
         saveCoingeckoId(ticker, match.id)
       } else {
         console.warn(`[priceService] No CoinGecko match for symbol: ${ticker}`)
-        failedLookups.add(ticker)
+        failedLookups.set(ticker, Date.now())
       }
     } catch (err) {
       console.warn(`[priceService] CoinGecko search error for ${ticker}:`, err.message)
-      failedLookups.add(ticker)
+      failedLookups.set(ticker, Date.now())
     }
   }
 }

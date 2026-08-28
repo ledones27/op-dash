@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   { id: 'history', label: 'Histórico', icon: List },
 ]
 
-export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, onNewTrade, onLogout, hideValues, onToggleHide, onViewAsset, allTickers, isGuest, children }) {
+export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, refreshing, onNewTrade, onLogout, hideValues, onToggleHide, onViewAsset, allTickers, isGuest, children }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const inputRef = useRef(null)
@@ -101,10 +101,11 @@ export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, 
               </button>
               <button
                 onClick={onRefresh}
-                className="p-2 rounded-lg hover:bg-bg-hover transition-colors text-text-secondary hover:text-text-primary"
+                disabled={refreshing}
+                className="p-2 rounded-lg hover:bg-bg-hover transition-colors text-text-secondary hover:text-text-primary disabled:opacity-50"
                 title="Atualizar preços"
               >
-                <RefreshCw className="w-4 h-4" />
+                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
               </button>
               {isGuest ? (
                 <span className="px-3 py-1.5 rounded-lg bg-bg-hover text-text-muted text-xs font-medium">

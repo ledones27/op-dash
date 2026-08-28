@@ -334,7 +334,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                 <p className="text-text-muted text-xs text-center py-4">Nenhuma posição</p>
               ) : (
                 <div className="space-y-2">
-                  {catPositions
+                  {[...catPositions]
                     .sort((a, b) => a.ativo.localeCompare(b.ativo))
                     .map((p, i) => {
                       const currentPrice = prices[p.ativo]

@@ -81,10 +81,9 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
       if (showExit && form.dataSaida && form.precoSaida) {
         payload.dataSaida = form.dataSaida
         payload.precoSaida = Number(form.precoSaida)
-      } else if (showExit === false && isEdit) {
-        // If user collapsed exit section while editing, clear exit data
-        payload.dataSaida = null
-        payload.precoSaida = null
+      } else if (isEdit && editTrade.dataSaida) {
+        payload.dataSaida = editTrade.dataSaida
+        payload.precoSaida = editTrade.precoSaida
       }
 
       await onSave(payload)

@@ -3,12 +3,13 @@ import { fetchAllTrades, createTrade, updateTrade, deleteTrade, fetchWatchlist, 
 import { fetchLivePrices } from '../services/priceService'
 import { PRICE_REFRESH_INTERVAL } from '../config'
 
-export function useTradeData() {
+export function useTradeData(enabled = true) {
   const [trades, setTrades] = useState([])
   const [watchlist, setWatchlist] = useState({})
   const [prices, setPrices] = useState({})
   const [loading, setLoading] = useState(true)
   const [lastUpdate, setLastUpdate] = useState(null)
+  const [refreshing, setRefreshing] = useState(false)
 
   // ─── Load ──────────────────────────────────────────────
 
@@ -39,6 +40,7 @@ export function useTradeData() {
 
   // Initial load
   useEffect(() => {
+    if (!enabled) return
     let mounted = true
     ;(async () => {
       try {
@@ -53,11 +55,11 @@ export function useTradeData() {
       }
     })()
     return () => { mounted = false }
-  }, []) // eslint-disable-line
+  }, [enabled]) // eslint-disable-line
 
   // Price refresh interval
   useEffect(() => {
-    if (trades.length === 0) return
+    if (!enabled || trades.length === 0) return
     const interval = setInterval(() => refreshPrices(), PRICE_REFRESH_INTERVAL)
     return () => clearInterval(interval)
   }, [trades, refreshPrices])
@@ -156,7 +158,9 @@ export function useTradeData() {
       const open = catTrades.filter(t => t.status === 'Aberta')
 
       const wins = closed.filter(t => (t.resultado ?? 0) > 0)
-      const losses = closed.filter(t => (t.resultado ?? 0) <= 0)
+      const losses = closed.filter(t => (t.resultado ?? 0) < 0)
+      const empates = closed.filter(t => (t.resultado ?? 0) === 0)
+      const decididos = wins.length + losses.length
 
       const avgWin = wins.length > 0
         ? wins.reduce((s, t) => s + (t.pnlPercent || 0), 0) / wins.length
@@ -181,7 +185,8 @@ export function useTradeData() {
         tradesAbertos: open.length,
         vitorias: wins.length,
         derrotas: losses.length,
-        winRate: closed.length > 0 ? wins.length / closed.length : null,
+        empates: empates.length,
+        winRate: decididos > 0 ? wins.length / decididos : null,
         mediaGanho: avgWin,
         mediaPerda: avgLoss,
         payoffRatio: avgWin && avgLoss ? Math.abs(avgWin / avgLoss) : null,
@@ -196,7 +201,9 @@ export function useTradeData() {
 
     // Linha TOTAL
     const allWins = closedTrades.filter(t => (t.resultado ?? 0) > 0)
-    const allLosses = closedTrades.filter(t => (t.resultado ?? 0) <= 0)
+    const allLosses = closedTrades.filter(t => (t.resultado ?? 0) < 0)
+    const allEmpates = closedTrades.filter(t => (t.resultado ?? 0) === 0)
+    const allDecididos = allWins.length + allLosses.length
 
     const totalWinAmt = allWins.reduce((s, t) => s + (t.resultado || 0), 0)
     const totalLossAmt = Math.abs(allLosses.reduce((s, t) => s + (t.resultado || 0), 0))
@@ -210,10 +217,13 @@ export function useTradeData() {
       tradesAbertos: openPositions.length,
       vitorias: allWins.length,
       derrotas: allLosses.length,
-      winRate: closedTrades.length > 0 ? allWins.length / closedTrades.length : null,
+      empates: allEmpates.length,
+      winRate: allDecididos > 0 ? allWins.length / allDecididos : null,
       mediaGanho: allWins.length > 0 ? allWins.reduce((s, t) => s + (t.pnlPercent || 0), 0) / allWins.length : null,
       mediaPerda: allLosses.length > 0 ? allLosses.reduce((s, t) => s + (t.pnlPercent || 0), 0) / allLosses.length : null,
-      payoffRatio: null,
+      payoffRatio: allWins.length > 0 && allLosses.length > 0
+        ? (allWins.reduce((s, t) => s + (t.pnlPercent || 0), 0) / allWins.length) / Math.abs(allLosses.reduce((s, t) => s + (t.pnlPercent || 0), 0) / allLosses.length)
+        : null,
       profitFactor: totalLossAmt > 0 ? totalWinAmt / totalLossAmt : null,
       resultadoTotal: totalResult,
       capitalAlocado: totalCapital,
@@ -241,7 +251,12 @@ export function useTradeData() {
     addWatch,
     editWatch,
     removeWatch,
-    refreshPrices: () => refreshPrices(),
+    refreshing,
+    refreshPrices: async () => {
+      if (refreshing) return
+      setRefreshing(true)
+      try { await refreshPrices() } finally { setRefreshing(false) }
+    },
     reloadAll: async () => {
       setLoading(true)
       try {

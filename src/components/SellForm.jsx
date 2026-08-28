@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Modal from './Modal'
 import DateInput from './DateInput'
 import { fmtPrice } from '../utils/calculations'
@@ -8,6 +8,14 @@ export default function SellForm({ open, onClose, onSave, trade }) {
   const [precoSaida, setPrecoSaida] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (open) {
+      setDataSaida(new Date().toISOString().split('T')[0])
+      setPrecoSaida('')
+      setError('')
+    }
+  }, [open, trade?.id])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

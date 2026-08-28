@@ -49,7 +49,8 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
     const totalTrades = closedTrades.length
     const wins = closedTrades.filter(t => (t.resultado || 0) > 0).length
     const losses = closedTrades.filter(t => (t.resultado || 0) < 0).length
-    const winRate = totalTrades > 0 ? wins / totalTrades : 0
+    const decididos = wins + losses
+    const winRate = decididos > 0 ? wins / decididos : 0
     const totalResult = closedTrades.reduce((s, t) => s + (t.resultado || 0), 0)
     const totalAporte = closedTrades.reduce((s, t) => s + (t.aporte || 0), 0)
     const avgDuration = totalTrades > 0

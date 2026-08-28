@@ -17,7 +17,10 @@ import { Loader2 } from 'lucide-react'
 
 export default function App() {
   const [authenticated, setAuthenticated] = useState(() => {
-    return document.cookie.split(';').some(c => c.trim().startsWith('op_auth='))
+    return document.cookie.split(';').some(c => {
+      const v = c.trim()
+      return v === 'op_auth=1' || v === 'op_auth=guest'
+    })
   })
   const [isGuest, setIsGuest] = useState(() => {
     return document.cookie.split(';').some(c => c.trim() === 'op_auth=guest')
@@ -35,7 +38,7 @@ export default function App() {
   const [deleteConfirm, setDeleteConfirm] = useState(null)
   const [viewingAsset, setViewingAsset] = useState(null)
 
-  const ctx = useTradeData()
+  const ctx = useTradeData(authenticated)
 
   const allTickers = useMemo(() => {
     const set = new Set()
@@ -181,7 +184,7 @@ export default function App() {
             onEdit={isGuest ? undefined : handleEditTrade}
             onDelete={isGuest ? undefined : handleDeleteTrade}
             onNew={isGuest ? undefined : handleNewTrade}
-            onExport={() => exportToExcel(ctx.trades, ctx.resultados, ctx.watchlist)}
+            onExport={isGuest ? undefined : () => exportToExcel(ctx.trades, ctx.resultados, ctx.watchlist)}
             onViewAsset={handleViewAsset}
           />
         )
@@ -197,6 +200,7 @@ export default function App() {
         onTabChange={(tab) => { setActiveTab(tab); setViewingAsset(null) }}
         lastUpdate={ctx.lastUpdate}
         onRefresh={ctx.refreshPrices}
+        refreshing={ctx.refreshing}
         onNewTrade={isGuest ? undefined : handleNewTrade}
         onLogout={handleLogout}
         isGuest={isGuest}
