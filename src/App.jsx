@@ -17,8 +17,10 @@ import { Loader2 } from 'lucide-react'
 
 export default function App() {
   const [authenticated, setAuthenticated] = useState(() => {
-    // Verificar cookie de sessão (7 dias)
-    return document.cookie.split(';').some(c => c.trim() === 'op_auth=1')
+    return document.cookie.split(';').some(c => c.trim().startsWith('op_auth='))
+  })
+  const [isGuest, setIsGuest] = useState(() => {
+    return document.cookie.split(';').some(c => c.trim() === 'op_auth=guest')
   })
   const [activeTab, setActiveTab] = useState('overview')
   const [hideValues, setHideValues] = useState(false)
@@ -44,15 +46,18 @@ export default function App() {
     return [...set].sort()
   }, [ctx.trades, ctx.watchlist])
 
-  const handleLogin = () => {
-    // Cookie expira em 7 dias
+  const handleLogin = (guest = false) => {
     const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString()
-    document.cookie = `op_auth=1; expires=${expires}; path=/; SameSite=Strict`
+    const value = guest ? 'guest' : '1'
+    document.cookie = `op_auth=${value}; expires=${expires}; path=/; SameSite=Strict`
+    setIsGuest(guest)
     setAuthenticated(true)
   }
 
   const handleLogout = () => {
     document.cookie = 'op_auth=1; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+    document.cookie = 'op_auth=guest; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+    setIsGuest(false)
     setAuthenticated(false)
   }
 
@@ -151,9 +156,9 @@ export default function App() {
           <OpenPositions
             trades={ctx.trades}
             prices={ctx.prices}
-            onEdit={handleEditTrade}
-            onDelete={handleDeleteTrade}
-            onSell={handleSellTrade}
+            onEdit={isGuest ? undefined : handleEditTrade}
+            onDelete={isGuest ? undefined : handleDeleteTrade}
+            onSell={isGuest ? undefined : handleSellTrade}
             onViewAsset={handleViewAsset}
           />
         )
@@ -163,9 +168,9 @@ export default function App() {
         return (
           <Watchlist
             watchlist={ctx.watchlist}
-            onAdd={() => { setEditingWatch(null); setWatchlistFormOpen(true) }}
-            onEdit={(item) => { setEditingWatch(item); setWatchlistFormOpen(true) }}
-            onRemove={handleDeleteWatch}
+            onAdd={isGuest ? undefined : () => { setEditingWatch(null); setWatchlistFormOpen(true) }}
+            onEdit={isGuest ? undefined : (item) => { setEditingWatch(item); setWatchlistFormOpen(true) }}
+            onRemove={isGuest ? undefined : handleDeleteWatch}
           />
         )
       case 'history':
@@ -173,9 +178,9 @@ export default function App() {
           <TradeHistory
             trades={ctx.trades}
             prices={ctx.prices}
-            onEdit={handleEditTrade}
-            onDelete={handleDeleteTrade}
-            onNew={handleNewTrade}
+            onEdit={isGuest ? undefined : handleEditTrade}
+            onDelete={isGuest ? undefined : handleDeleteTrade}
+            onNew={isGuest ? undefined : handleNewTrade}
             onExport={() => exportToExcel(ctx.trades, ctx.resultados, ctx.watchlist)}
             onViewAsset={handleViewAsset}
           />
@@ -192,8 +197,9 @@ export default function App() {
         onTabChange={(tab) => { setActiveTab(tab); setViewingAsset(null) }}
         lastUpdate={ctx.lastUpdate}
         onRefresh={ctx.refreshPrices}
-        onNewTrade={handleNewTrade}
+        onNewTrade={isGuest ? undefined : handleNewTrade}
         onLogout={handleLogout}
+        isGuest={isGuest}
         hideValues={hideValues}
         onToggleHide={() => setHideValues(v => !v)}
         onViewAsset={handleViewAsset}

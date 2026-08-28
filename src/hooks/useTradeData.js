@@ -101,6 +101,8 @@ export function useTradeData() {
         id: created.id,
         ativo: created.ativo,
         operacao: created.operacao,
+        operando: created.operando,
+        comentario: created.comentario,
       }],
     }))
   }, [])
@@ -109,14 +111,14 @@ export function useTradeData() {
     const updated = await updateWatchlistItem(id, updates)
     setWatchlist(prev => {
       const next = { ...prev }
-      // Remove da categoria antiga
       next[oldCategoria] = (next[oldCategoria] || []).filter(w => w.id !== id)
-      // Adiciona na categoria (pode ter mudado)
       const cat = updates.categoria || oldCategoria
       next[cat] = [...(next[cat] || []), {
         id: updated.id,
         ativo: updated.ativo,
         operacao: updated.operacao,
+        operando: updated.operando,
+        comentario: updated.comentario,
       }]
       return next
     })

@@ -375,7 +375,9 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                                 </span>
                               )}
                             </div>
+                            {(onSell || onEdit || onDelete) && (
                             <div data-no-export className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {onSell && (
                               <button
                                 onClick={() => onSell(p)}
                                 className="p-1 rounded hover:bg-accent-gold/20 text-text-muted hover:text-accent-gold transition-colors"
@@ -383,6 +385,8 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                               >
                                 <LogOut className="w-3 h-3" />
                               </button>
+                              )}
+                              {onEdit && (
                               <button
                                 onClick={() => onEdit(p)}
                                 className="p-1 rounded hover:bg-bg-hover text-text-muted hover:text-accent-blue transition-colors"
@@ -390,6 +394,8 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                               >
                                 <Pencil className="w-3 h-3" />
                               </button>
+                              )}
+                              {onDelete && (
                               <button
                                 onClick={() => onDelete(p)}
                                 className="p-1 rounded hover:bg-bg-hover text-text-muted hover:text-accent-red transition-colors"
@@ -397,7 +403,9 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                               >
                                 <Trash2 className="w-3 h-3" />
                               </button>
+                              )}
                             </div>
+                            )}
                           </div>
 
                           {/* Linha 2: Preços */}

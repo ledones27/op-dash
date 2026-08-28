@@ -17,12 +17,14 @@ export default function Watchlist({ watchlist, onAdd, onEdit, onRemove }) {
       {/* Header com botão de adicionar */}
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-text-secondary">Pré-Entradas por Categoria</h2>
+        {onAdd && (
         <button
           onClick={onAdd}
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold bg-accent-gold/15 text-accent-gold hover:bg-accent-gold/25 transition-colors"
         >
           <Plus className="w-4 h-4" /> Adicionar
         </button>
+        )}
       </div>
 
       {!hasItems ? (
@@ -67,8 +69,9 @@ export default function Watchlist({ watchlist, onAdd, onEdit, onRemove }) {
                             </span>
                           )}
                         </div>
-                        {item.id && (
+                        {item.id && (onEdit || onRemove) && (
                           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all">
+                            {onEdit && (
                             <button
                               onClick={() => onEdit({ ...item, categoria: cat })}
                               className="p-1 rounded hover:bg-bg-hover text-text-muted hover:text-accent-gold transition-colors"
@@ -76,6 +79,8 @@ export default function Watchlist({ watchlist, onAdd, onEdit, onRemove }) {
                             >
                               <Pencil className="w-3.5 h-3.5" />
                             </button>
+                            )}
+                            {onRemove && (
                             <button
                               onClick={() => onRemove(item.id, cat, item.ativo)}
                               className="p-1 rounded hover:bg-bg-hover text-text-muted hover:text-accent-red transition-colors"
@@ -83,6 +88,7 @@ export default function Watchlist({ watchlist, onAdd, onEdit, onRemove }) {
                             >
                               <X className="w-3.5 h-3.5" />
                             </button>
+                            )}
                           </div>
                         )}
                       </div>

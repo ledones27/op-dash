@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   { id: 'history', label: 'Histórico', icon: List },
 ]
 
-export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, onNewTrade, onLogout, hideValues, onToggleHide, onViewAsset, allTickers, children }) {
+export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, onNewTrade, onLogout, hideValues, onToggleHide, onViewAsset, allTickers, isGuest, children }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const inputRef = useRef(null)
@@ -106,13 +106,19 @@ export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, 
               >
                 <RefreshCw className="w-4 h-4" />
               </button>
-              <button
-                onClick={onNewTrade}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-accent-gold text-bg-primary text-sm font-semibold hover:bg-accent-gold/90 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Novo Trade</span>
-              </button>
+              {isGuest ? (
+                <span className="px-3 py-1.5 rounded-lg bg-bg-hover text-text-muted text-xs font-medium">
+                  Convidado
+                </span>
+              ) : (
+                <button
+                  onClick={onNewTrade}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-accent-gold text-bg-primary text-sm font-semibold hover:bg-accent-gold/90 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Novo Trade</span>
+                </button>
+              )}
             </div>
           </div>
         </div>

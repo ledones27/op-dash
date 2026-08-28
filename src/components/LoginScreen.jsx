@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Lock } from 'lucide-react'
-import { DASH_PASSWORD } from '../config'
+import { DASH_PASSWORD, GUEST_PASSWORD } from '../config'
 
 export default function LoginScreen({ onLogin }) {
   const [password, setPassword] = useState('')
@@ -9,7 +9,9 @@ export default function LoginScreen({ onLogin }) {
   const handleSubmit = (e) => {
     e.preventDefault()
     if (password === DASH_PASSWORD) {
-      onLogin()
+      onLogin(false)
+    } else if (password === GUEST_PASSWORD) {
+      onLogin(true)
     } else {
       setError(true)
       setTimeout(() => setError(false), 2000)

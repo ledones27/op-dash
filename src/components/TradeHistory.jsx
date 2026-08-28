@@ -1,5 +1,7 @@
-import { useState, useMemo } from 'react'
-import { ArrowUpRight, ArrowDownRight, Filter, Plus, Download, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState, useMemo, useRef, useEffect } from 'react'
+import { ArrowUpRight, ArrowDownRight, Filter, Plus, Download, Pencil, Trash2, ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
 import { fmtUSD, fmtPct, fmtPrice, fmtDate } from '../utils/calculations'
 import AssetLogo from './AssetLogo'
 import DateInput from './DateInput'
@@ -34,14 +36,53 @@ function compareValues(a, b, key) {
   return String(va).localeCompare(String(vb))
 }
 
+const MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+
+function getExitMonths(trades) {
+  const months = new Set()
+  for (const t of trades) {
+    if (t.dataSaida && t.status === 'Fechada') {
+      months.add(t.dataSaida.slice(0, 7))
+    }
+  }
+  return [...months].sort().reverse()
+}
+
 export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport, prices, onViewAsset }) {
+  const hasActions = !!(onEdit || onDelete)
+  const columns = hasActions ? COLUMNS : COLUMNS.filter(c => c.key !== '_actions')
   const [catFilter, setCatFilter] = useState('Todos')
   const [statusFilter, setStatusFilter] = useState('Todos')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [exitMonth, setExitMonth] = useState('')
+  const [monthPickerOpen, setMonthPickerOpen] = useState(false)
+  const monthPickerRef = useRef(null)
   const [sortKey, setSortKey] = useState('dataEntrada')
   const [sortDir, setSortDir] = useState('desc')
   const [page, setPage] = useState(1)
+
+  const availableExitMonths = useMemo(() => getExitMonths(trades), [trades])
+
+  useEffect(() => {
+    if (!monthPickerOpen) return
+    const handleClick = (e) => {
+      if (monthPickerRef.current && !monthPickerRef.current.contains(e.target)) setMonthPickerOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [monthPickerOpen])
+
+  const exitMonthAsDate = exitMonth ? new Date(exitMonth + '-15T12:00:00') : null
+
+  const handleMonthSelect = (date) => {
+    if (!date) { setExitMonth(''); setPage(1); setMonthPickerOpen(false); return }
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    setExitMonth(`${y}-${m}`)
+    setPage(1)
+    setMonthPickerOpen(false)
+  }
 
   const handleSort = (key) => {
     if (sortKey === key) {
@@ -59,12 +100,13 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
     if (statusFilter !== 'Todos') result = result.filter(t => t.status === statusFilter)
     if (dateFrom) result = result.filter(t => t.dataEntrada && t.dataEntrada >= dateFrom)
     if (dateTo) result = result.filter(t => t.dataEntrada && t.dataEntrada <= dateTo)
+    if (exitMonth) result = result.filter(t => t.dataSaida && t.dataSaida.startsWith(exitMonth))
     result.sort((a, b) => {
       const cmp = compareValues(a, b, sortKey)
       return sortDir === 'asc' ? cmp : -cmp
     })
     return result
-  }, [trades, catFilter, statusFilter, dateFrom, dateTo, sortKey, sortDir])
+  }, [trades, catFilter, statusFilter, dateFrom, dateTo, exitMonth, sortKey, sortDir])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
@@ -136,6 +178,44 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
             </button>
           )}
         </div>
+        <span className="text-border">|</span>
+        <div className="flex items-center gap-2 relative">
+          <button
+            onClick={() => setMonthPickerOpen(v => !v)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+              exitMonth
+                ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/40'
+                : 'bg-bg-primary text-text-secondary border-border hover:bg-bg-hover'
+            }`}
+            title="Filtrar por mês de saída"
+          >
+            <Calendar className="w-3 h-3" />
+            {exitMonth
+              ? `${MONTH_NAMES[parseInt(exitMonth.split('-')[1], 10) - 1]} ${exitMonth.split('-')[0]}`
+              : 'Mês saída'
+            }
+          </button>
+          {exitMonth && (
+            <button
+              onClick={() => { setExitMonth(''); setPage(1) }}
+              className="text-xs text-text-muted hover:text-accent-red transition-colors"
+            >
+              ×
+            </button>
+          )}
+          {monthPickerOpen && (
+            <div ref={monthPickerRef} className="absolute left-0 top-full mt-2 z-50 bg-bg-card border border-border rounded-xl shadow-lg p-3">
+              <DatePicker
+                inline
+                selected={exitMonthAsDate}
+                onChange={handleMonthSelect}
+                showMonthYearPicker
+                dateFormat="MM/yyyy"
+                calendarClassName="op-calendar"
+              />
+            </div>
+          )}
+        </div>
         <span className="text-text-muted text-xs ml-auto">{filtered.length} trades</span>
         <button
           onClick={onExport}
@@ -144,12 +224,14 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
         >
           <Download className="w-3 h-3" /> Exportar
         </button>
+        {onNew && (
         <button
           onClick={onNew}
           className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent-gold/15 text-accent-gold hover:bg-accent-gold/25 transition-colors"
         >
           <Plus className="w-3 h-3" /> Novo
         </button>
+        )}
       </div>
 
       {/* Table */}
@@ -157,7 +239,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
         <table className="w-full text-sm">
           <thead>
             <tr className="text-text-muted text-xs uppercase border-b border-border">
-              {COLUMNS.map(col => {
+              {columns.map(col => {
                 const sortable = col.sortable !== false
                 const isActive = sortKey === col.key
                 const alignCls = col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
@@ -249,8 +331,10 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                       {t.status}
                     </span>
                   </td>
+                  {(onEdit || onDelete) && (
                   <td className="py-2.5 px-2 text-center">
                     <div className="flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {onEdit && (
                       <button
                         onClick={() => onEdit(t)}
                         className="p-1.5 rounded hover:bg-bg-hover text-text-muted hover:text-accent-blue transition-colors"
@@ -258,6 +342,8 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
+                      )}
+                      {onDelete && (
                       <button
                         onClick={() => onDelete(t)}
                         className="p-1.5 rounded hover:bg-bg-hover text-text-muted hover:text-accent-red transition-colors"
@@ -265,8 +351,10 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
+                      )}
                     </div>
                   </td>
+                  )}
                 </tr>
               )
             })}

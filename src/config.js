@@ -5,6 +5,9 @@
 // Senha de acesso ao dashboard (definida como env var na Netlify)
 export const DASH_PASSWORD = import.meta.env.VITE_DASH_PASSWORD || 'operacoes2026'
 
+// Senha de acesso como convidado (somente leitura)
+export const GUEST_PASSWORD = import.meta.env.VITE_GUEST_PASSWORD || 'convidado2026'
+
 // Intervalo de atualização de preços ao vivo (ms)
 export const PRICE_REFRESH_INTERVAL = 60_000 // 1 minuto
 
