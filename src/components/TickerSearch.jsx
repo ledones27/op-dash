@@ -52,7 +52,7 @@ export default function TickerSearch({ value, onChange, categoria, autoFocus }) 
         .filter(item => item.symbol && item.shortname)
         .map(item => ({
           // Mantém o símbolo original para índices (ex: ^BVSP), remove .SA para ações BR
-          symbol: item.quoteType === 'INDEX' ? item.symbol : item.symbol.replace('.SA', ''),
+          symbol: item.quoteType === 'INDEX' ? item.symbol : item.symbol.replace(/\.SA$/, ''),
           name: item.shortname,
           type: item.quoteType || '',
           exchange: item.exchange || '',
