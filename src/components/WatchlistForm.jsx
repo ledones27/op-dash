@@ -62,13 +62,26 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
   const labelClass = 'block text-xs text-text-secondary font-medium mb-1.5'
 
   return (
-    <Modal open={open} onClose={onClose} title={isEditing ? 'Editar Item' : 'Adicionar à Watchlist'}>
+    <Modal open={open} onClose={onClose} title={isEditing ? 'Editar Item' : 'Adicionar à Watchlist'} wide>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className={labelClass}>Categoria</label>
-          <select value={categoria} onChange={e => setCategoria(e.target.value)} className={inputClass}>
-            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+          <div className="flex gap-2">
+            {CATEGORIES.map(c => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCategoria(c)}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                  categoria === c
+                    ? 'bg-accent-gold/20 text-accent-gold border border-accent-gold/40'
+                    : 'bg-bg-primary border border-border text-text-secondary hover:border-accent-gold/30'
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div>

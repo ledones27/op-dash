@@ -124,116 +124,121 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
 
   return (
     <div className="space-y-4">
-      {/* Filters + new button */}
-      <div className="card flex flex-wrap items-center gap-3">
-        <Filter className="w-4 h-4 text-text-muted" />
-        <div className="flex gap-1">
-          {CATEGORIES.map(c => (
-            <button
-              key={c}
-              onClick={() => { setCatFilter(c); setPage(1) }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                catFilter === c
-                  ? 'bg-accent-gold/15 text-accent-gold'
-                  : 'text-text-secondary hover:bg-bg-hover'
-              }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-        <span className="text-border">|</span>
-        <div className="flex gap-1">
-          {STATUSES.map(s => (
-            <button
-              key={s}
-              onClick={() => { setStatusFilter(s); setPage(1) }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                statusFilter === s
-                  ? 'bg-accent-blue/15 text-accent-blue'
-                  : 'text-text-secondary hover:bg-bg-hover'
-              }`}
-            >
-              {s === 'Todos' ? 'Todos' : s === 'Fechada' ? 'Fechados' : 'Abertos'}
-            </button>
-          ))}
-        </div>
-        <span className="text-border">|</span>
-        <div className="flex items-center gap-2">
-          <span className="text-text-muted text-xs">De:</span>
-          <div className="w-36">
-            <DateInput value={dateFrom} onChange={(v) => { setDateFrom(v); setPage(1) }} placeholder="Início" />
+      {/* Filters */}
+      <div className="card space-y-3">
+        {/* Row 1: Categoria + Status + Ações */}
+        <div className="flex items-center gap-3">
+          <Filter className="w-4 h-4 text-text-muted shrink-0" />
+          <div className="flex gap-1">
+            {CATEGORIES.map(c => (
+              <button
+                key={c}
+                onClick={() => { setCatFilter(c); setPage(1) }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  catFilter === c
+                    ? 'bg-accent-gold/15 text-accent-gold'
+                    : 'text-text-secondary hover:bg-bg-hover'
+                }`}
+              >
+                {c}
+              </button>
+            ))}
           </div>
-          <span className="text-text-muted text-xs">Até:</span>
-          <div className="w-36">
-            <DateInput value={dateTo} onChange={(v) => { setDateTo(v); setPage(1) }} placeholder="Fim" />
+          <span className="text-border">|</span>
+          <div className="flex gap-1">
+            {STATUSES.map(s => (
+              <button
+                key={s}
+                onClick={() => { setStatusFilter(s); setPage(1) }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  statusFilter === s
+                    ? 'bg-accent-blue/15 text-accent-blue'
+                    : 'text-text-secondary hover:bg-bg-hover'
+                }`}
+              >
+                {s === 'Todos' ? 'Todos' : s === 'Fechada' ? 'Fechados' : 'Abertos'}
+              </button>
+            ))}
           </div>
-          {(dateFrom || dateTo) && (
-            <button
-              onClick={() => { setDateFrom(''); setDateTo(''); setPage(1) }}
-              className="text-xs text-text-muted hover:text-accent-red transition-colors"
-              title="Limpar datas"
-            >
-              Limpar
-            </button>
-          )}
-        </div>
-        <span className="text-border">|</span>
-        <div className="flex items-center gap-2 relative">
+          <span className="text-text-muted text-xs ml-auto">{filtered.length} trades</span>
+          {onExport && (
           <button
-            onClick={() => setMonthPickerOpen(v => !v)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
-              exitMonth
-                ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/40'
-                : 'bg-bg-primary text-text-secondary border-border hover:bg-bg-hover'
-            }`}
-            title="Filtrar por mês de saída"
+            onClick={onExport}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent-green/15 text-accent-green hover:bg-accent-green/25 transition-colors"
+            title="Exportar todos os dados para Excel"
           >
-            <Calendar className="w-3 h-3" />
-            {exitMonth
-              ? `${MONTH_NAMES[parseInt(exitMonth.split('-')[1], 10) - 1]} ${exitMonth.split('-')[0]}`
-              : 'Mês saída'
-            }
+            <Download className="w-3 h-3" /> Exportar
           </button>
-          {exitMonth && (
-            <button
-              onClick={() => { setExitMonth(''); setPage(1) }}
-              className="text-xs text-text-muted hover:text-accent-red transition-colors"
-            >
-              ×
-            </button>
           )}
-          {monthPickerOpen && (
-            <div ref={monthPickerRef} className="absolute left-0 top-full mt-2 z-50 bg-bg-card border border-border rounded-xl shadow-lg p-3">
-              <DatePicker
-                inline
-                selected={exitMonthAsDate}
-                onChange={handleMonthSelect}
-                showMonthYearPicker
-                dateFormat="MM/yyyy"
-                calendarClassName="op-calendar"
-              />
-            </div>
+          {onNew && (
+          <button
+            onClick={onNew}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent-gold/15 text-accent-gold hover:bg-accent-gold/25 transition-colors"
+          >
+            <Plus className="w-3 h-3" /> Novo
+          </button>
           )}
         </div>
-        <span className="text-text-muted text-xs ml-auto">{filtered.length} trades</span>
-        {onExport && (
-        <button
-          onClick={onExport}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent-green/15 text-accent-green hover:bg-accent-green/25 transition-colors"
-          title="Exportar todos os dados para Excel"
-        >
-          <Download className="w-3 h-3" /> Exportar
-        </button>
-        )}
-        {onNew && (
-        <button
-          onClick={onNew}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent-gold/15 text-accent-gold hover:bg-accent-gold/25 transition-colors"
-        >
-          <Plus className="w-3 h-3" /> Novo
-        </button>
-        )}
+        {/* Row 2: Datas + Mês saída */}
+        <div className="flex items-center gap-3 border-t border-border/50 pt-3">
+          <div className="flex items-center gap-2">
+            <span className="text-text-muted text-xs">De:</span>
+            <div className="w-36">
+              <DateInput value={dateFrom} onChange={(v) => { setDateFrom(v); setPage(1) }} placeholder="Início" />
+            </div>
+            <span className="text-text-muted text-xs">Até:</span>
+            <div className="w-36">
+              <DateInput value={dateTo} onChange={(v) => { setDateTo(v); setPage(1) }} placeholder="Fim" />
+            </div>
+            {(dateFrom || dateTo) && (
+              <button
+                onClick={() => { setDateFrom(''); setDateTo(''); setPage(1) }}
+                className="text-xs text-text-muted hover:text-accent-red transition-colors"
+                title="Limpar datas"
+              >
+                Limpar
+              </button>
+            )}
+          </div>
+          <span className="text-border">|</span>
+          <div className="flex items-center gap-2 relative">
+            <button
+              onClick={() => setMonthPickerOpen(v => !v)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                exitMonth
+                  ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/40'
+                  : 'bg-bg-primary text-text-secondary border-border hover:bg-bg-hover'
+              }`}
+              title="Filtrar por mês de saída"
+            >
+              <Calendar className="w-3 h-3" />
+              {exitMonth
+                ? `${MONTH_NAMES[parseInt(exitMonth.split('-')[1], 10) - 1]} ${exitMonth.split('-')[0]}`
+                : 'Mês saída'
+              }
+            </button>
+            {exitMonth && (
+              <button
+                onClick={() => { setExitMonth(''); setPage(1) }}
+                className="text-xs text-text-muted hover:text-accent-red transition-colors"
+              >
+                ×
+              </button>
+            )}
+            {monthPickerOpen && (
+              <div ref={monthPickerRef} className="absolute left-0 top-full mt-2 z-50 bg-bg-card border border-border rounded-xl shadow-lg p-3">
+                <DatePicker
+                  inline
+                  selected={exitMonthAsDate}
+                  onChange={handleMonthSelect}
+                  showMonthYearPicker
+                  dateFormat="MM/yyyy"
+                  calendarClassName="op-calendar"
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Table */}

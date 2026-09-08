@@ -101,40 +101,53 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
   return (
     <Modal open={open} onClose={onClose} title={isEdit ? 'Editar Entrada' : 'Novo Trade'} wide>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Row 1: Categoria + Operação */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className={labelClass}>Categoria</label>
-            <select value={form.categoria} onChange={e => set('categoria', e.target.value)} className={inputClass}>
-              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
+        {/* Row 1: Categoria */}
+        <div>
+          <label className={labelClass}>Categoria</label>
+          <div className="flex gap-2">
+            {CATEGORIES.map(c => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => set('categoria', c)}
+                className={`flex-1 py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
+                  form.categoria === c
+                    ? 'bg-accent-gold/20 text-accent-gold border border-accent-gold/40'
+                    : 'bg-bg-primary border border-border text-text-secondary hover:border-accent-gold/30'
+                }`}
+              >
+                {c}
+              </button>
+            ))}
           </div>
-          <div>
-            <label className={labelClass}>Operação</label>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => set('operacao', 'LONG')}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
-                  form.operacao === 'LONG'
-                    ? 'bg-accent-green/20 text-accent-green border border-accent-green/40'
-                    : 'bg-bg-primary border border-border text-text-secondary hover:border-accent-green/30'
-                }`}
-              >
-                LONG
-              </button>
-              <button
-                type="button"
-                onClick={() => set('operacao', 'SHORT')}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
-                  form.operacao === 'SHORT'
-                    ? 'bg-accent-red/20 text-accent-red border border-accent-red/40'
-                    : 'bg-bg-primary border border-border text-text-secondary hover:border-accent-red/30'
-                }`}
-              >
-                SHORT
-              </button>
-            </div>
+        </div>
+
+        {/* Row 2: Operação */}
+        <div>
+          <label className={labelClass}>Operação</label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => set('operacao', 'LONG')}
+              className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                form.operacao === 'LONG'
+                  ? 'bg-accent-green/20 text-accent-green border border-accent-green/40'
+                  : 'bg-bg-primary border border-border text-text-secondary hover:border-accent-green/30'
+              }`}
+            >
+              LONG
+            </button>
+            <button
+              type="button"
+              onClick={() => set('operacao', 'SHORT')}
+              className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                form.operacao === 'SHORT'
+                  ? 'bg-accent-red/20 text-accent-red border border-accent-red/40'
+                  : 'bg-bg-primary border border-border text-text-secondary hover:border-accent-red/30'
+              }`}
+            >
+              SHORT
+            </button>
           </div>
         </div>
 
