@@ -127,14 +127,14 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
       {/* Filters */}
       <div className="card space-y-3">
         {/* Row 1: Categoria + Status + Ações */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <Filter className="w-4 h-4 text-text-muted shrink-0" />
-          <div className="flex gap-1">
+          <div className="flex flex-wrap gap-1">
             {CATEGORIES.map(c => (
               <button
                 key={c}
                 onClick={() => { setCatFilter(c); setPage(1) }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   catFilter === c
                     ? 'bg-accent-gold/15 text-accent-gold'
                     : 'text-text-secondary hover:bg-bg-hover'
@@ -144,13 +144,13 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
               </button>
             ))}
           </div>
-          <span className="text-border">|</span>
+          <span className="text-border hidden sm:inline">|</span>
           <div className="flex gap-1">
             {STATUSES.map(s => (
               <button
                 key={s}
                 onClick={() => { setStatusFilter(s); setPage(1) }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   statusFilter === s
                     ? 'bg-accent-blue/15 text-accent-blue'
                     : 'text-text-secondary hover:bg-bg-hover'
@@ -180,14 +180,14 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
           )}
         </div>
         {/* Row 2: Datas + Mês saída */}
-        <div className="flex items-center gap-3 border-t border-border/50 pt-3">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t border-border/50 pt-3">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-text-muted text-xs">De:</span>
-            <div className="w-36">
+            <div className="w-28 sm:w-36">
               <DateInput value={dateFrom} onChange={(v) => { setDateFrom(v); setPage(1) }} placeholder="Início" />
             </div>
             <span className="text-text-muted text-xs">Até:</span>
-            <div className="w-36">
+            <div className="w-28 sm:w-36">
               <DateInput value={dateTo} onChange={(v) => { setDateTo(v); setPage(1) }} placeholder="Fim" />
             </div>
             {(dateFrom || dateTo) && (
@@ -200,7 +200,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
               </button>
             )}
           </div>
-          <span className="text-border">|</span>
+          <span className="text-border hidden sm:inline">|</span>
           <div className="flex items-center gap-2 relative">
             <button
               onClick={() => setMonthPickerOpen(v => !v)}

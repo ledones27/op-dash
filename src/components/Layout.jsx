@@ -31,12 +31,10 @@ export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, 
       <header className="border-b border-border bg-bg-card/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-14">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-accent-gold/15 flex items-center justify-center">
-                <span className="text-accent-gold font-bold text-sm">OP</span>
-              </div>
-              <h1 className="text-lg font-bold tracking-tight">Operações</h1>
-              <div className="relative ml-2">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <img src="/logo1.webp" alt="OP" className="h-8 w-auto" />
+              <h1 className="text-lg font-bold tracking-tight hidden sm:block">Operações</h1>
+              <div className="relative">
                 {searchOpen ? (
                   <div className="relative">
                     <input
@@ -136,13 +134,13 @@ export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, 
                 <button
                   key={item.id}
                   onClick={() => onTabChange(item.id)}
-                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                  className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-3 text-xs sm:text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                     active
                       ? 'border-accent-gold text-accent-gold'
                       : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-4 h-4 hidden sm:block" />
                   {item.label}
                 </button>
               )

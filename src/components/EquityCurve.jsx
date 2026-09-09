@@ -205,12 +205,12 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
             {customTo && ` — ${fmtDate(customTo, { day: '2-digit', month: 'short', year: 'numeric' })}`}
           </span>
         )}
-        <div className="flex gap-1 bg-bg-card rounded-lg p-1 border border-border">
+        <div className="flex gap-1 bg-bg-card rounded-lg p-1 border border-border w-full sm:w-auto">
           {PERIOD_OPTIONS.map(opt => (
             <button
               key={opt.key}
               onClick={() => { setPeriod(opt.key); setCalendarOpen(false) }}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex-1 sm:flex-none ${
                 period === opt.key && !isCustomPeriod
                   ? 'bg-accent-gold text-bg-primary'
                   : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
@@ -264,7 +264,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
 
       {/* Equity Curve */}
       <div className="card">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <div className="flex items-center gap-3">
             <h3 className="text-sm font-semibold text-text-secondary">Resultado Acumulado</h3>
             <div className="flex gap-0.5 bg-bg-primary rounded-md p-0.5 border border-border">

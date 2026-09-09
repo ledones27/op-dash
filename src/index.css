@@ -31,6 +31,8 @@
   }
   .positive { @apply text-accent-green; }
   .negative { @apply text-accent-red; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
 }
 
 /* ─── Privacy mode: esconder apenas valores em $ ─────── */

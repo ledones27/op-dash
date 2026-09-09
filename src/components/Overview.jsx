@@ -225,7 +225,7 @@ export default function Overview({ resultados, openPositions, prices }) {
                   </td>
                   <td className="text-right py-3 px-2 font-mono">{r.tradesFechados}</td>
                   <td className="text-right py-3 px-2 font-mono">{r.tradesAbertos}</td>
-                  <td className="text-center py-3 px-2 font-mono">
+                  <td className="text-center py-3 px-2 font-mono whitespace-nowrap">
                     <span className="positive">{r.vitorias}</span>
                     <span className="text-text-muted"> / </span>
                     <span className="text-text-muted">{r.empates || 0}</span>
