@@ -1,5 +1,55 @@
 import * as XLSX from 'xlsx'
 
+export function exportFilteredTrades(trades, filters = {}) {
+  const wb = XLSX.utils.book_new()
+
+  const headers = [
+    'Data Entrada', 'Data Saída', 'Ativo', 'Categoria', 'Operação',
+    'Preço Entrada', 'Preço Saída', 'PnL %', 'Status',
+    'Aporte', 'Resultado', 'Duração (dias)',
+  ]
+
+  const rows = trades.map(t => [
+    t.dataEntrada || '',
+    t.dataSaida || '',
+    t.ativo || '',
+    t.categoria || '',
+    t.operacao || '',
+    t.precoEntrada ?? '',
+    t.precoSaida ?? '',
+    t.pnlPercent != null ? t.pnlPercent : '',
+    t.status || '',
+    t.aporte ?? '',
+    t.resultado != null ? Math.round(t.resultado * 100) / 100 : '',
+    t.duracao ?? '',
+  ])
+
+  const data = [headers, ...rows]
+  const ws = XLSX.utils.aoa_to_sheet(data)
+
+  ws['!cols'] = [
+    { wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 14 }, { wch: 8 },
+    { wch: 14 }, { wch: 14 }, { wch: 10 }, { wch: 9 },
+    { wch: 10 }, { wch: 12 }, { wch: 14 },
+  ]
+
+  for (let r = 1; r <= rows.length; r++) {
+    const cell = ws[XLSX.utils.encode_cell({ r, c: 7 })]
+    if (cell && typeof cell.v === 'number') cell.z = '0.00%'
+  }
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Trades')
+
+  const parts = ['Operacoes']
+  const { catFilter, statusFilter, dateFrom, dateTo, exitMonth } = filters
+  if (catFilter && catFilter !== 'Todos') parts.push(catFilter)
+  if (statusFilter && statusFilter !== 'Todos') parts.push(statusFilter === 'Fechada' ? 'Fechados' : 'Abertos')
+  if (exitMonth) parts.push(exitMonth)
+  else if (dateFrom || dateTo) parts.push([dateFrom, dateTo].filter(Boolean).join('_'))
+  if (parts.length === 1) parts.push(new Date().toISOString().slice(0, 10))
+  XLSX.writeFile(wb, `${parts.join('_')}.xlsx`)
+}
+
 /**
  * Exporta todos os trades e resultados para um arquivo .xlsx
  * com a mesma estrutura do arquivo original:

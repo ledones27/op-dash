@@ -163,9 +163,9 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
           <span className="text-text-muted text-xs ml-auto">{filtered.length} trades</span>
           {onExport && (
           <button
-            onClick={onExport}
+            onClick={() => onExport(filtered, { catFilter, statusFilter, dateFrom, dateTo, exitMonth })}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent-green/15 text-accent-green hover:bg-accent-green/25 transition-colors"
-            title="Exportar todos os dados para Excel"
+            title="Exportar trades filtrados para Excel"
           >
             <Download className="w-3 h-3" /> Exportar
           </button>

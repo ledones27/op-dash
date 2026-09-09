@@ -12,7 +12,7 @@ import SellForm from './components/SellForm'
 import WatchlistForm from './components/WatchlistForm'
 import AssetDetail from './components/AssetDetail'
 import ConfirmDialog from './components/ConfirmDialog'
-import { exportToExcel } from './services/exportService'
+import { exportToExcel, exportFilteredTrades } from './services/exportService'
 import { Loader2 } from 'lucide-react'
 
 export default function App() {
@@ -184,7 +184,7 @@ export default function App() {
             onEdit={isGuest ? undefined : handleEditTrade}
             onDelete={isGuest ? undefined : handleDeleteTrade}
             onNew={isGuest ? undefined : handleNewTrade}
-            onExport={isGuest ? undefined : () => exportToExcel(ctx.trades, ctx.resultados, ctx.watchlist)}
+            onExport={isGuest ? undefined : (filteredTrades, filters) => exportFilteredTrades(filteredTrades, filters)}
             onViewAsset={handleViewAsset}
           />
         )
