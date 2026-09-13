@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { fetchAllTrades, createTrade, updateTrade, deleteTrade, fetchWatchlist, addToWatchlist, updateWatchlistItem, removeFromWatchlist } from '../services/tradeService'
+import { fetchBtcTrades, createBtcTrade, updateBtcTrade, deleteBtcTrade } from '../services/btcService'
 import { fetchLivePrices } from '../services/priceService'
 import { PRICE_REFRESH_INTERVAL } from '../config'
 
@@ -7,6 +8,7 @@ export function useTradeData(enabled = true) {
   const [trades, setTrades] = useState([])
   const [watchlist, setWatchlist] = useState({})
   const [prices, setPrices] = useState({})
+  const [btcTrades, setBtcTrades] = useState([])
   const [loading, setLoading] = useState(true)
   const [lastUpdate, setLastUpdate] = useState(null)
   const [refreshing, setRefreshing] = useState(false)
@@ -15,9 +17,10 @@ export function useTradeData(enabled = true) {
 
   const loadAll = useCallback(async () => {
     try {
-      const [t, w] = await Promise.all([fetchAllTrades(), fetchWatchlist()])
+      const [t, w, btc] = await Promise.all([fetchAllTrades(), fetchWatchlist(), fetchBtcTrades()])
       setTrades(t)
       setWatchlist(w)
+      setBtcTrades(btc)
       return t
     } catch (err) {
       console.error('Erro ao carregar dados:', err)
@@ -134,6 +137,25 @@ export function useTradeData(enabled = true) {
     }))
   }, [])
 
+  // ─── CRUD BTC ──────────────────────────────────────────
+
+  const addBtcTrade = useCallback(async (trade) => {
+    const created = await createBtcTrade(trade)
+    setBtcTrades(prev => [...prev, created].sort((a, b) => (a.dataEntrada || '').localeCompare(b.dataEntrada || '')))
+    return created
+  }, [])
+
+  const editBtcTrade = useCallback(async (id, updates) => {
+    const updated = await updateBtcTrade(id, updates)
+    setBtcTrades(prev => prev.map(t => t.id === id ? updated : t).sort((a, b) => (a.dataEntrada || '').localeCompare(b.dataEntrada || '')))
+    return updated
+  }, [])
+
+  const removeBtcTrade = useCallback(async (id) => {
+    await deleteBtcTrade(id)
+    setBtcTrades(prev => prev.filter(t => t.id !== id))
+  }, [])
+
   // ─── Derived data ─────────────────────────────────────
 
   const tradesByCategory = useMemo(() => {
@@ -245,9 +267,13 @@ export function useTradeData(enabled = true) {
     openPositions,
     closedTrades,
     resultados,
+    btcTrades,
     addTrade,
     editTrade,
     removeTrade,
+    addBtcTrade,
+    editBtcTrade,
+    removeBtcTrade,
     addWatch,
     editWatch,
     removeWatch,

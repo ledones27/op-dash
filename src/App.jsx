@@ -7,6 +7,7 @@ import OpenPositions from './components/OpenPositions'
 import EquityCurve from './components/EquityCurve'
 import Watchlist from './components/Watchlist'
 import TradeHistory from './components/TradeHistory'
+import Bitcoin from './components/Bitcoin'
 import TradeForm from './components/TradeForm'
 import SellForm from './components/SellForm'
 import WatchlistForm from './components/WatchlistForm'
@@ -129,6 +130,8 @@ export default function App() {
     if (!deleteConfirm) return
     if (deleteConfirm.type === 'trade') {
       await ctx.removeTrade(deleteConfirm.id)
+    } else if (deleteConfirm.type === 'btc') {
+      await ctx.removeBtcTrade(deleteConfirm.id)
     } else {
       await ctx.removeWatch(deleteConfirm.id, deleteConfirm.categoria)
     }
@@ -186,6 +189,22 @@ export default function App() {
             onNew={isGuest ? undefined : handleNewTrade}
             onExport={isGuest ? undefined : (filteredTrades, filters) => exportFilteredTrades(filteredTrades, filters)}
             onViewAsset={handleViewAsset}
+          />
+        )
+      case 'bitcoin':
+        return (
+          <Bitcoin
+            btcTrades={ctx.btcTrades}
+            onAdd={isGuest ? undefined : ctx.addBtcTrade}
+            onEdit={isGuest ? undefined : ctx.editBtcTrade}
+            onDelete={isGuest ? undefined : (trade) => {
+              setDeleteConfirm({
+                type: 'btc',
+                id: trade.id,
+                label: `Trade BTC #${trade.id} — ${trade.dataEntrada}`,
+              })
+            }}
+            isGuest={isGuest}
           />
         )
       default:

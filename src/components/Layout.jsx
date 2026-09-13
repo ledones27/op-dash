@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { id: 'watchlist', label: 'Watchlist', icon: Eye },
   { id: 'equity', label: 'Equity Curve', icon: TrendingUp },
   { id: 'history', label: 'Histórico', icon: List },
+  { id: 'bitcoin', label: 'Bitcoin', icon: TrendingUp },
 ]
 
 export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, refreshing, onNewTrade, onLogout, hideValues, onToggleHide, onViewAsset, allTickers, isGuest, children }) {
