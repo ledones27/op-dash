@@ -291,7 +291,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                   </td>
                   <td className="py-2.5 px-2 text-text-muted text-xs">{t.categoria}</td>
                   <td className="py-2.5 px-2 text-center">
-                    <div className="flex items-center justify-center gap-1.5">
+                    <div className="relative inline-flex items-center justify-center">
                       <span className={t.operacao === 'LONG' ? 'badge-long' : 'badge-short'}>
                         {t.operacao === 'LONG' ? (
                           <><ArrowUpRight className="w-3 h-3 mr-0.5" />L</>
@@ -300,10 +300,10 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                         )}
                       </span>
                       {t.operando && (
-                        <img src="/check-operando.png" alt="Operando" className="w-3.5 h-3.5" title="Operando" />
+                        <img src="/check-operando.png" alt="Operando" className="w-3.5 h-3.5 absolute -right-4 top-1/2 -translate-y-1/2" title="Operando" />
                       )}
                       {t.comentario && (
-                        <span className="text-text-muted cursor-help" title={t.comentario}>
+                        <span className="text-text-muted cursor-help absolute -right-4 top-1/2 -translate-y-1/2" style={t.operando ? { right: '-1.75rem' } : {}} title={t.comentario}>
                           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         </span>
                       )}

@@ -81,9 +81,9 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
       if (showExit && form.dataSaida && form.precoSaida) {
         payload.dataSaida = form.dataSaida
         payload.precoSaida = Number(form.precoSaida)
-      } else if (isEdit && editTrade.dataSaida) {
-        payload.dataSaida = editTrade.dataSaida
-        payload.precoSaida = editTrade.precoSaida
+      } else {
+        payload.dataSaida = null
+        payload.precoSaida = null
       }
 
       await onSave(payload)
@@ -217,6 +217,7 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
                 value={form.dataSaida}
                 onChange={v => set('dataSaida', v)}
                 placeholder="Selecione a data"
+                clearable
               />
             </div>
             <div>
