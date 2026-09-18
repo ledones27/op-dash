@@ -186,6 +186,7 @@ function dbToTrade(row) {
     resultado,
     duracao,
     operando: row.operando ?? false,
+    quantfury: row.quantfury ?? false,
     comentario: row.comentario || null,
   }
 }
@@ -201,6 +202,7 @@ function tradeToDb(trade) {
   if (trade.precoSaida !== undefined) db.preco_saida = trade.precoSaida || null
   if (trade.aporte !== undefined) db.aporte = trade.aporte
   if (trade.operando !== undefined) db.operando = trade.operando
+  if (trade.quantfury !== undefined) db.quantfury = trade.quantfury
   if (trade.comentario !== undefined) db.comentario = trade.comentario
   return db
 }

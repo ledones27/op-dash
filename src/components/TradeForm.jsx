@@ -15,6 +15,7 @@ const emptyForm = {
   dataSaida: '',
   precoSaida: '',
   operando: false,
+  quantfury: false,
   comentario: '',
 }
 
@@ -38,6 +39,7 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
         dataSaida: editTrade.dataSaida || '',
         precoSaida: editTrade.precoSaida ?? '',
         operando: editTrade.operando ?? false,
+        quantfury: editTrade.quantfury ?? false,
         comentario: editTrade.comentario || '',
       })
       setShowExit(!!(editTrade.dataSaida || editTrade.precoSaida))
@@ -75,6 +77,7 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
         operacao: form.operacao,
         aporte: Number(form.aporte),
         operando: form.operando,
+        quantfury: form.quantfury,
         comentario: form.comentario.trim() || null,
       }
 
@@ -234,9 +237,9 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
           </div>
         )}
 
-        {/* Row 5: Operando + Comentário */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex items-center gap-2 pt-1">
+        {/* Row 5: Operando + Quantfury */}
+        <div className="flex items-center gap-6 pt-1">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => set('operando', !form.operando)}
@@ -250,6 +253,22 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
             </button>
             <label className="text-sm text-text-secondary cursor-pointer" onClick={() => set('operando', !form.operando)}>
               Operando
+            </label>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => set('quantfury', !form.quantfury)}
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                form.quantfury
+                  ? 'bg-purple-500 border-purple-500 text-white'
+                  : 'border-border hover:border-text-muted'
+              }`}
+            >
+              {form.quantfury && <span className="text-xs font-bold">✓</span>}
+            </button>
+            <label className="text-sm text-text-secondary cursor-pointer" onClick={() => set('quantfury', !form.quantfury)}>
+              Quantfury
             </label>
           </div>
         </div>

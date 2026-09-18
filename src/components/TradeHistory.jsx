@@ -58,6 +58,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
   const [exitMonth, setExitMonth] = useState('')
   const [monthPickerOpen, setMonthPickerOpen] = useState(false)
   const monthPickerRef = useRef(null)
+  const [quantfuryFilter, setQuantfuryFilter] = useState(false)
   const [sortKey, setSortKey] = useState('dataEntrada')
   const [sortDir, setSortDir] = useState('desc')
   const [page, setPage] = useState(1)
@@ -101,12 +102,13 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
     if (dateFrom) result = result.filter(t => t.dataEntrada && t.dataEntrada >= dateFrom)
     if (dateTo) result = result.filter(t => t.dataEntrada && t.dataEntrada <= dateTo)
     if (exitMonth) result = result.filter(t => t.dataSaida && t.dataSaida.startsWith(exitMonth))
+    if (quantfuryFilter) result = result.filter(t => t.quantfury)
     result.sort((a, b) => {
       const cmp = compareValues(a, b, sortKey)
       return sortDir === 'asc' ? cmp : -cmp
     })
     return result
-  }, [trades, catFilter, statusFilter, dateFrom, dateTo, exitMonth, sortKey, sortDir])
+  }, [trades, catFilter, statusFilter, dateFrom, dateTo, exitMonth, quantfuryFilter, sortKey, sortDir])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
@@ -160,6 +162,17 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
               </button>
             ))}
           </div>
+          <span className="text-border hidden sm:inline">|</span>
+          <button
+            onClick={() => { setQuantfuryFilter(v => !v); setPage(1) }}
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              quantfuryFilter
+                ? 'bg-purple-500/15 text-purple-400'
+                : 'text-text-secondary hover:bg-bg-hover'
+            }`}
+          >
+            Quantfury
+          </button>
           <span className="text-text-muted text-xs ml-auto">{filtered.length} trades</span>
           {onExport && (
           <button
@@ -290,8 +303,8 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                     </div>
                   </td>
                   <td className="py-2.5 px-2 text-text-muted text-xs">{t.categoria}</td>
-                  <td className="py-2.5 px-2 text-center">
-                    <div className="relative inline-flex items-center justify-center">
+                  <td className="py-2.5 px-2">
+                    <div className="flex items-center justify-center gap-1.5">
                       <span className={t.operacao === 'LONG' ? 'badge-long' : 'badge-short'}>
                         {t.operacao === 'LONG' ? (
                           <><ArrowUpRight className="w-3 h-3 mr-0.5" />L</>
@@ -300,10 +313,13 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                         )}
                       </span>
                       {t.operando && (
-                        <img src="/check-operando.png" alt="Operando" className="w-3.5 h-3.5 absolute -right-4 top-1/2 -translate-y-1/2" title="Operando" />
+                        <img src="/check-operando.png" alt="Operando" className="w-3.5 h-3.5" title="Operando" />
+                      )}
+                      {t.quantfury && (
+                        <span className="text-xs font-bold text-purple-400" title="Quantfury">Q</span>
                       )}
                       {t.comentario && (
-                        <span className="text-text-muted cursor-help absolute -right-4 top-1/2 -translate-y-1/2" style={t.operando ? { right: '-1.75rem' } : {}} title={t.comentario}>
+                        <span className="text-text-muted cursor-help" title={t.comentario}>
                           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         </span>
                       )}

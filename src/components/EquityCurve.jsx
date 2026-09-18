@@ -70,6 +70,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
   const [autoScale, setAutoScale] = useState(true)
   const [showTotal, setShowTotal] = useState(true)
   const [visibleCats, setVisibleCats] = useState(new Set())
+  const [quantfuryOnly, setQuantfuryOnly] = useState(false)
 
   const toggleCat = useCallback((key) => {
     setVisibleCats(prev => {
@@ -100,9 +101,13 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
 
   const cutoffEnd = isCustomPeriod ? customTo : null
 
+  const baseTrades = useMemo(() =>
+    quantfuryOnly ? allTrades.filter(t => t.quantfury) : allTrades,
+  [allTrades, quantfuryOnly])
+
   // Full data (unfiltered)
-  const curveAll = useMemo(() => buildEquityCurve(allTrades), [allTrades])
-  const capitalAll = useMemo(() => buildCapitalTimeline(allTrades), [allTrades])
+  const curveAll = useMemo(() => buildEquityCurve(baseTrades), [baseTrades])
+  const capitalAll = useMemo(() => buildCapitalTimeline(baseTrades), [baseTrades])
 
   // Filtered equity curve data
   const curve = useMemo(() => {
@@ -199,6 +204,16 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
     <div className="space-y-4">
       {/* Period filter buttons */}
       <div className="flex items-center justify-end gap-2 flex-wrap">
+        <button
+          onClick={() => setQuantfuryOnly(v => !v)}
+          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors mr-auto ${
+            quantfuryOnly
+              ? 'bg-purple-500/20 text-purple-400 border border-purple-500/40'
+              : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover border border-transparent'
+          }`}
+        >
+          Q Quantfury
+        </button>
         {isCustomPeriod && customFrom && (
           <span className="text-xs text-text-muted">
             {fmtDate(customFrom, { day: '2-digit', month: 'short', year: 'numeric' })}

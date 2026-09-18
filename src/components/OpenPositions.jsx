@@ -359,22 +359,27 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                               >
                                 {p.ativo}
                               </button>
-                              <span className="relative inline-flex">
-                                <span className={p.operacao === 'LONG' ? 'badge-long' : 'badge-short'}>
-                                  {p.operacao === 'LONG' ? (
-                                    <><ArrowUpRight className="w-3 h-3 mr-0.5" />L</>
-                                  ) : (
-                                    <><ArrowDownRight className="w-3 h-3 mr-0.5" />S</>
-                                  )}
-                                </span>
-                                {p.operando && (
-                                  <img src="/check-operando.png" alt="Operando" className="w-3.5 h-3.5 absolute -right-4 top-1/2 -translate-y-1/2" title="Operando" />
+                              <span className={p.operacao === 'LONG' ? 'badge-long' : 'badge-short'}>
+                                {p.operacao === 'LONG' ? (
+                                  <><ArrowUpRight className="w-3 h-3 mr-0.5" />L</>
+                                ) : (
+                                  <><ArrowDownRight className="w-3 h-3 mr-0.5" />S</>
                                 )}
                               </span>
-                              {p.comentario && (
-                                <span className="text-text-muted cursor-help relative group/tip" title={p.comentario}>
-                                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                </span>
+                              {(p.operando || p.quantfury || p.comentario) && (
+                                <div className="flex items-center gap-2">
+                                  {p.operando && (
+                                    <img src="/check-operando.png" alt="Operando" className="w-3.5 h-3.5" title="Operando" />
+                                  )}
+                                  {p.quantfury && (
+                                    <span className="text-xs font-bold text-purple-400" title="Quantfury">Q</span>
+                                  )}
+                                  {p.comentario && (
+                                    <span className="text-text-muted cursor-help" title={p.comentario}>
+                                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                    </span>
+                                  )}
+                                </div>
                               )}
                             </div>
                             {(onSell || onEdit || onDelete) && (
