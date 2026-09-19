@@ -70,7 +70,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
   const [autoScale, setAutoScale] = useState(true)
   const [showTotal, setShowTotal] = useState(true)
   const [visibleCats, setVisibleCats] = useState(new Set())
-  const [corretoraFilter, setCorretoraFilter] = useState('')
+  const [corretoraFilter, setCorretoraFilter] = useState(new Set())
 
   const toggleCat = useCallback((key) => {
     setVisibleCats(prev => {
@@ -102,7 +102,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
   const cutoffEnd = isCustomPeriod ? customTo : null
 
   const baseTrades = useMemo(() =>
-    corretoraFilter ? allTrades.filter(t => t.corretora === corretoraFilter) : allTrades,
+    corretoraFilter.size > 0 ? allTrades.filter(t => corretoraFilter.has(t.corretora)) : allTrades,
   [allTrades, corretoraFilter])
 
   // Full data (unfiltered)
@@ -125,9 +125,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
     return { timeline: filtered, peakCapital: capitalAll.peakCapital }
   }, [capitalAll, cutoff, cutoffEnd])
 
-  if (curveAll.length === 0) {
-    return <div className="card text-text-muted text-center py-12">Nenhum trade fechado ainda.</div>
-  }
+  const noData = curveAll.length === 0
 
   // Format dates for equity chart
   const chartData = curve.map(d => ({
@@ -213,9 +211,14 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
           ].map(b => (
             <button
               key={b.name}
-              onClick={() => setCorretoraFilter(v => v === b.name ? '' : b.name)}
+              onClick={() => setCorretoraFilter(prev => {
+                const next = new Set(prev)
+                if (next.has(b.name)) next.delete(b.name)
+                else next.add(b.name)
+                return next
+              })}
               className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors border ${
-                corretoraFilter === b.name
+                corretoraFilter.has(b.name)
                   ? b.active
                   : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover border-transparent'
               }`}
@@ -287,6 +290,12 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
         </div>
       </div>
 
+      {noData && (
+        <div className="card text-text-muted text-center py-12">Nenhum trade fechado ainda.</div>
+      )}
+
+      {!noData && (
+      <>
       {/* Equity Curve */}
       <div className="card">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
@@ -494,6 +503,8 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
           )}
         </div>
       </div>
+      </>
+      )}
     </div>
   )
 }

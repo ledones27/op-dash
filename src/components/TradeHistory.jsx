@@ -58,7 +58,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
   const [exitMonth, setExitMonth] = useState('')
   const [monthPickerOpen, setMonthPickerOpen] = useState(false)
   const monthPickerRef = useRef(null)
-  const [corretoraFilter, setCorretoraFilter] = useState('')
+  const [corretoraFilter, setCorretoraFilter] = useState(new Set())
   const [sortKey, setSortKey] = useState('dataEntrada')
   const [sortDir, setSortDir] = useState('desc')
   const [page, setPage] = useState(1)
@@ -102,7 +102,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
     if (dateFrom) result = result.filter(t => t.dataEntrada && t.dataEntrada >= dateFrom)
     if (dateTo) result = result.filter(t => t.dataEntrada && t.dataEntrada <= dateTo)
     if (exitMonth) result = result.filter(t => t.dataSaida && t.dataSaida.startsWith(exitMonth))
-    if (corretoraFilter) result = result.filter(t => t.corretora === corretoraFilter)
+    if (corretoraFilter.size > 0) result = result.filter(t => corretoraFilter.has(t.corretora))
     result.sort((a, b) => {
       const cmp = compareValues(a, b, sortKey)
       return sortDir === 'asc' ? cmp : -cmp
@@ -171,9 +171,9 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
           ].map(b => (
             <button
               key={b.name}
-              onClick={() => { setCorretoraFilter(v => v === b.name ? '' : b.name); setPage(1) }}
+              onClick={() => { setCorretoraFilter(prev => { const next = new Set(prev); if (next.has(b.name)) next.delete(b.name); else next.add(b.name); return next }); setPage(1) }}
               className={`px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                corretoraFilter === b.name
+                corretoraFilter.has(b.name)
                   ? b.active
                   : 'text-text-secondary hover:bg-bg-hover'
               }`}
