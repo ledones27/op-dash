@@ -268,7 +268,7 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
               {form.quantfury && <span className="text-xs font-bold">✓</span>}
             </button>
             <label className="text-sm text-text-secondary cursor-pointer" onClick={() => set('quantfury', !form.quantfury)}>
-              Quantfury
+              Corretora
             </label>
           </div>
         </div>
