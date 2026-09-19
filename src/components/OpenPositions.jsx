@@ -366,13 +366,17 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                                   <><ArrowDownRight className="w-3 h-3 mr-0.5" />S</>
                                 )}
                               </span>
-                              {(p.operando || p.quantfury || p.comentario) && (
+                              {(p.operando || p.corretora || p.comentario) && (
                                 <div className="flex items-center gap-2">
                                   {p.operando && (
                                     <img src="/check-operando.png" alt="Operando" className="w-3.5 h-3.5" title="Operando" />
                                   )}
-                                  {p.quantfury && (
-                                    <span className="text-xs font-bold text-purple-400" title="Quantfury">Q</span>
+                                  {p.corretora && (
+                                    <span className={`text-xs font-bold ${
+                                      p.corretora === 'Quantfury' ? 'text-emerald-400' :
+                                      p.corretora === 'Binance' ? 'text-yellow-400' :
+                                      'text-white'
+                                    }`} title={p.corretora}>{p.corretora[0]}</span>
                                   )}
                                   {p.comentario && (
                                     <span className="text-text-muted cursor-help" title={p.comentario}>

@@ -70,7 +70,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
   const [autoScale, setAutoScale] = useState(true)
   const [showTotal, setShowTotal] = useState(true)
   const [visibleCats, setVisibleCats] = useState(new Set())
-  const [quantfuryOnly, setQuantfuryOnly] = useState(false)
+  const [corretoraFilter, setCorretoraFilter] = useState('')
 
   const toggleCat = useCallback((key) => {
     setVisibleCats(prev => {
@@ -102,8 +102,8 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
   const cutoffEnd = isCustomPeriod ? customTo : null
 
   const baseTrades = useMemo(() =>
-    quantfuryOnly ? allTrades.filter(t => t.quantfury) : allTrades,
-  [allTrades, quantfuryOnly])
+    corretoraFilter ? allTrades.filter(t => t.corretora === corretoraFilter) : allTrades,
+  [allTrades, corretoraFilter])
 
   // Full data (unfiltered)
   const curveAll = useMemo(() => buildEquityCurve(baseTrades), [baseTrades])
@@ -204,16 +204,26 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
     <div className="space-y-4">
       {/* Period filter buttons */}
       <div className="flex items-center justify-end gap-2 flex-wrap">
-        <button
-          onClick={() => setQuantfuryOnly(v => !v)}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors mr-auto ${
-            quantfuryOnly
-              ? 'bg-purple-500/20 text-purple-400 border border-purple-500/40'
-              : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover border border-transparent'
-          }`}
-        >
-          Q Quantfury
-        </button>
+        <div className="flex gap-1 mr-auto">
+          {[
+            { name: 'Quantfury', active: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' },
+            { name: 'Hyperliquid', active: 'bg-white/10 text-white border-white/30' },
+            { name: 'Binance', active: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40' },
+            { name: 'Outra', active: 'bg-gray-500/20 text-gray-400 border-gray-500/40' },
+          ].map(b => (
+            <button
+              key={b.name}
+              onClick={() => setCorretoraFilter(v => v === b.name ? '' : b.name)}
+              className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors border ${
+                corretoraFilter === b.name
+                  ? b.active
+                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover border-transparent'
+              }`}
+            >
+              {b.name}
+            </button>
+          ))}
+        </div>
         {isCustomPeriod && customFrom && (
           <span className="text-xs text-text-muted">
             {fmtDate(customFrom, { day: '2-digit', month: 'short', year: 'numeric' })}

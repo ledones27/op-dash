@@ -19,9 +19,9 @@ export default function Modal({ open, onClose, title, children, wide }) {
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Dialog */}
-      <div className={`relative bg-bg-card border border-border rounded-xl shadow-2xl w-full ${wide ? 'max-w-2xl' : 'max-w-md'} max-h-[90vh] overflow-visible`}>
+      <div className={`relative bg-bg-card border border-border rounded-xl shadow-2xl w-full ${wide ? 'max-w-2xl' : 'max-w-md'} max-h-[90vh] flex flex-col overflow-hidden`}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
           <h2 className="text-base font-semibold">{title}</h2>
           <button
             onClick={onClose}
@@ -32,7 +32,7 @@ export default function Modal({ open, onClose, title, children, wide }) {
         </div>
 
         {/* Body */}
-        <div className="px-5 py-4">
+        <div className="px-5 py-4 overflow-y-auto">
           {children}
         </div>
       </div>

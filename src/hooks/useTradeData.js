@@ -107,6 +107,7 @@ export function useTradeData(enabled = true) {
         ativo: created.ativo,
         operacao: created.operacao,
         operando: created.operando,
+        corretora: created.corretora || null,
         comentario: created.comentario,
       }],
     }))
@@ -123,6 +124,7 @@ export function useTradeData(enabled = true) {
         ativo: updated.ativo,
         operacao: updated.operacao,
         operando: updated.operando,
+        corretora: updated.corretora || null,
         comentario: updated.comentario,
       }]
       return next

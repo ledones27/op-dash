@@ -15,7 +15,7 @@ const emptyForm = {
   dataSaida: '',
   precoSaida: '',
   operando: false,
-  quantfury: false,
+  corretora: '',
   comentario: '',
 }
 
@@ -39,7 +39,7 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
         dataSaida: editTrade.dataSaida || '',
         precoSaida: editTrade.precoSaida ?? '',
         operando: editTrade.operando ?? false,
-        quantfury: editTrade.quantfury ?? false,
+        corretora: editTrade.corretora || '',
         comentario: editTrade.comentario || '',
       })
       setShowExit(!!(editTrade.dataSaida || editTrade.precoSaida))
@@ -77,7 +77,7 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
         operacao: form.operacao,
         aporte: Number(form.aporte),
         operando: form.operando,
-        quantfury: form.quantfury,
+        corretora: form.corretora || null,
         comentario: form.comentario.trim() || null,
       }
 
@@ -237,39 +237,47 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
           </div>
         )}
 
-        {/* Row 5: Operando + Quantfury */}
-        <div className="flex items-center gap-6 pt-1">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => set('operando', !form.operando)}
-              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                form.operando
-                  ? 'bg-accent-gold border-accent-gold text-bg-primary'
-                  : 'border-border hover:border-text-muted'
-              }`}
-            >
-              {form.operando && <span className="text-xs font-bold">✓</span>}
-            </button>
-            <label className="text-sm text-text-secondary cursor-pointer" onClick={() => set('operando', !form.operando)}>
-              Operando
-            </label>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => set('quantfury', !form.quantfury)}
-              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                form.quantfury
-                  ? 'bg-purple-500 border-purple-500 text-white'
-                  : 'border-border hover:border-text-muted'
-              }`}
-            >
-              {form.quantfury && <span className="text-xs font-bold">✓</span>}
-            </button>
-            <label className="text-sm text-text-secondary cursor-pointer" onClick={() => set('quantfury', !form.quantfury)}>
-              Corretora
-            </label>
+        {/* Row 5: Operando */}
+        <div className="flex items-center gap-2 pt-1">
+          <button
+            type="button"
+            onClick={() => set('operando', !form.operando)}
+            className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+              form.operando
+                ? 'bg-accent-gold border-accent-gold text-bg-primary'
+                : 'border-border hover:border-text-muted'
+            }`}
+          >
+            {form.operando && <span className="text-xs font-bold">✓</span>}
+          </button>
+          <label className="text-sm text-text-secondary cursor-pointer" onClick={() => set('operando', !form.operando)}>
+            Operando
+          </label>
+        </div>
+
+        {/* Row 6: Corretora */}
+        <div>
+          <label className={labelClass}>Corretora</label>
+          <div className="flex gap-2">
+            {[
+              { name: 'Quantfury', active: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40', hover: 'hover:border-emerald-500/30' },
+              { name: 'Hyperliquid', active: 'bg-white/10 text-white border-white/30', hover: 'hover:border-white/30' },
+              { name: 'Binance', active: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40', hover: 'hover:border-yellow-500/30' },
+              { name: 'Outra', active: 'bg-gray-500/20 text-gray-400 border-gray-500/40', hover: 'hover:border-gray-500/30' },
+            ].map(b => (
+              <button
+                key={b.name}
+                type="button"
+                onClick={() => set('corretora', form.corretora === b.name ? '' : b.name)}
+                className={`flex-1 py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
+                  form.corretora === b.name
+                    ? `${b.active} border`
+                    : `bg-bg-primary border border-border text-text-secondary ${b.hover}`
+                }`}
+              >
+                {b.name}
+              </button>
+            ))}
           </div>
         </div>
 

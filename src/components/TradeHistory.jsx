@@ -58,7 +58,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
   const [exitMonth, setExitMonth] = useState('')
   const [monthPickerOpen, setMonthPickerOpen] = useState(false)
   const monthPickerRef = useRef(null)
-  const [quantfuryFilter, setQuantfuryFilter] = useState(false)
+  const [corretoraFilter, setCorretoraFilter] = useState('')
   const [sortKey, setSortKey] = useState('dataEntrada')
   const [sortDir, setSortDir] = useState('desc')
   const [page, setPage] = useState(1)
@@ -102,13 +102,13 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
     if (dateFrom) result = result.filter(t => t.dataEntrada && t.dataEntrada >= dateFrom)
     if (dateTo) result = result.filter(t => t.dataEntrada && t.dataEntrada <= dateTo)
     if (exitMonth) result = result.filter(t => t.dataSaida && t.dataSaida.startsWith(exitMonth))
-    if (quantfuryFilter) result = result.filter(t => t.quantfury)
+    if (corretoraFilter) result = result.filter(t => t.corretora === corretoraFilter)
     result.sort((a, b) => {
       const cmp = compareValues(a, b, sortKey)
       return sortDir === 'asc' ? cmp : -cmp
     })
     return result
-  }, [trades, catFilter, statusFilter, dateFrom, dateTo, exitMonth, quantfuryFilter, sortKey, sortDir])
+  }, [trades, catFilter, statusFilter, dateFrom, dateTo, exitMonth, corretoraFilter, sortKey, sortDir])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
@@ -163,16 +163,24 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
             ))}
           </div>
           <span className="text-border hidden sm:inline">|</span>
-          <button
-            onClick={() => { setQuantfuryFilter(v => !v); setPage(1) }}
-            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              quantfuryFilter
-                ? 'bg-purple-500/15 text-purple-400'
-                : 'text-text-secondary hover:bg-bg-hover'
-            }`}
-          >
-            Quantfury
-          </button>
+          {[
+            { name: 'Quantfury', active: 'bg-emerald-500/15 text-emerald-400' },
+            { name: 'Hyperliquid', active: 'bg-white/10 text-white' },
+            { name: 'Binance', active: 'bg-yellow-500/15 text-yellow-400' },
+            { name: 'Outra', active: 'bg-gray-500/15 text-gray-400' },
+          ].map(b => (
+            <button
+              key={b.name}
+              onClick={() => { setCorretoraFilter(v => v === b.name ? '' : b.name); setPage(1) }}
+              className={`px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                corretoraFilter === b.name
+                  ? b.active
+                  : 'text-text-secondary hover:bg-bg-hover'
+              }`}
+            >
+              {b.name}
+            </button>
+          ))}
           <span className="text-text-muted text-xs ml-auto">{filtered.length} trades</span>
           {onExport && (
           <button
@@ -315,8 +323,12 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                       {t.operando && (
                         <img src="/check-operando.png" alt="Operando" className="w-3.5 h-3.5" title="Operando" />
                       )}
-                      {t.quantfury && (
-                        <span className="text-xs font-bold text-purple-400" title="Quantfury">Q</span>
+                      {t.corretora && (
+                        <span className={`text-xs font-bold ${
+                          t.corretora === 'Quantfury' ? 'text-emerald-400' :
+                          t.corretora === 'Binance' ? 'text-yellow-400' :
+                          'text-white'
+                        }`} title={t.corretora}>{t.corretora[0]}</span>
                       )}
                       {t.comentario && (
                         <span className="text-text-muted cursor-help" title={t.comentario}>

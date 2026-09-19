@@ -87,6 +87,7 @@ export async function fetchWatchlist() {
         ativo: item.ativo,
         operacao: item.operacao,
         operando: item.operando ?? false,
+        corretora: item.corretora || null,
         comentario: item.comentario || null,
       })
     }
@@ -104,6 +105,7 @@ export async function addToWatchlist(item) {
       ativo: item.ativo.toUpperCase().trim(),
       operacao: item.operacao || null,
       operando: item.operando ?? false,
+      corretora: item.corretora || null,
       comentario: item.comentario || null,
     })
     .select()
@@ -121,6 +123,7 @@ export async function updateWatchlistItem(id, updates) {
   if (updates.ativo !== undefined) db.ativo = updates.ativo.toUpperCase().trim()
   if (updates.operacao !== undefined) db.operacao = updates.operacao || null
   if (updates.operando !== undefined) db.operando = updates.operando
+  if (updates.corretora !== undefined) db.corretora = updates.corretora || null
   if (updates.comentario !== undefined) db.comentario = updates.comentario || null
 
   const { data, error } = await supabase
@@ -186,7 +189,7 @@ function dbToTrade(row) {
     resultado,
     duracao,
     operando: row.operando ?? false,
-    quantfury: row.quantfury ?? false,
+    corretora: row.corretora || null,
     comentario: row.comentario || null,
   }
 }
@@ -202,7 +205,7 @@ function tradeToDb(trade) {
   if (trade.precoSaida !== undefined) db.preco_saida = trade.precoSaida || null
   if (trade.aporte !== undefined) db.aporte = trade.aporte
   if (trade.operando !== undefined) db.operando = trade.operando
-  if (trade.quantfury !== undefined) db.quantfury = trade.quantfury
+  if (trade.corretora !== undefined) db.corretora = trade.corretora || null
   if (trade.comentario !== undefined) db.comentario = trade.comentario
   return db
 }

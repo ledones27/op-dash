@@ -9,6 +9,7 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
   const [ativo, setAtivo] = useState('')
   const [operacao, setOperacao] = useState('')
   const [operando, setOperando] = useState(true)
+  const [corretora, setCorretora] = useState('')
   const [comentario, setComentario] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -21,12 +22,14 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
       setAtivo(editItem.ativo || '')
       setOperacao(editItem.operacao || '')
       setOperando(editItem.operando ?? true)
+      setCorretora(editItem.corretora || '')
       setComentario(editItem.comentario || '')
     } else {
       setCategoria('Ações')
       setAtivo('')
       setOperacao('')
       setOperando(true)
+      setCorretora('')
       setComentario('')
     }
     setError('')
@@ -45,6 +48,7 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
         ativo: ativo.toUpperCase().trim(),
         operacao: operacao || null,
         operando,
+        corretora: corretora || null,
         comentario: comentario.trim() || null,
       })
       setAtivo('')
@@ -102,6 +106,31 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
                 operacao === 'SHORT' ? 'bg-accent-red/20 text-accent-red border border-accent-red/40' : 'bg-bg-primary border border-border text-text-secondary'}`}>
               SHORT
             </button>
+          </div>
+        </div>
+
+        <div>
+          <label className={labelClass}>Corretora</label>
+          <div className="flex gap-2">
+            {[
+              { name: 'Quantfury', active: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40', hover: 'hover:border-emerald-500/30' },
+              { name: 'Hyperliquid', active: 'bg-white/10 text-white border-white/30', hover: 'hover:border-white/30' },
+              { name: 'Binance', active: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40', hover: 'hover:border-yellow-500/30' },
+              { name: 'Outra', active: 'bg-gray-500/20 text-gray-400 border-gray-500/40', hover: 'hover:border-gray-500/30' },
+            ].map(b => (
+              <button
+                key={b.name}
+                type="button"
+                onClick={() => setCorretora(corretora === b.name ? '' : b.name)}
+                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                  corretora === b.name
+                    ? `${b.active} border`
+                    : `bg-bg-primary border border-border text-text-secondary ${b.hover}`
+                }`}
+              >
+                {b.name}
+              </button>
+            ))}
           </div>
         </div>
 
