@@ -40,9 +40,14 @@ export default function Watchlist({ watchlist, onAdd, onEdit, onRemove }) {
 
             return (
               <div key={cat} className="card">
-                <h3 className={`text-sm font-semibold mb-3 ${style.color}`}>
-                  Pré {cat}
-                </h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className={`text-sm font-semibold ${style.color}`}>
+                    Pré {cat}
+                  </h3>
+                  <span className="text-xs text-text-muted">
+                    {items.length} {items.length === 1 ? 'ativo' : 'ativos'}
+                  </span>
+                </div>
                 {items.length === 0 ? (
                   <p className="text-text-muted text-xs">Nenhum ativo</p>
                 ) : (
