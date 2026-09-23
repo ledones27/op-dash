@@ -68,6 +68,9 @@ export default function Watchlist({ watchlist, onAdd, onEdit, onRemove }) {
                               )}
                             </span>
                           )}
+                          {item.operando && (
+                            <img src="/check-operando.png" alt="Pré-entrada" className="w-3.5 h-3.5" title="Pré-entrada" />
+                          )}
                           {item.corretora && (
                             <span className={`text-xs font-bold ${
                               item.corretora === 'Quantfury' ? 'text-emerald-400' :

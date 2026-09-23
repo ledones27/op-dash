@@ -8,7 +8,7 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
   const [categoria, setCategoria] = useState('Ações')
   const [ativo, setAtivo] = useState('')
   const [operacao, setOperacao] = useState('')
-  const [operando, setOperando] = useState(true)
+  const [preEntrada, setPreEntrada] = useState(false)
   const [corretora, setCorretora] = useState('')
   const [comentario, setComentario] = useState('')
   const [saving, setSaving] = useState(false)
@@ -21,14 +21,14 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
       setCategoria(editItem.categoria || 'Ações')
       setAtivo(editItem.ativo || '')
       setOperacao(editItem.operacao || '')
-      setOperando(editItem.operando ?? true)
+      setPreEntrada(editItem.operando ?? false)
       setCorretora(editItem.corretora || '')
       setComentario(editItem.comentario || '')
     } else {
       setCategoria('Ações')
       setAtivo('')
       setOperacao('')
-      setOperando(true)
+      setPreEntrada(false)
       setCorretora('')
       setComentario('')
     }
@@ -47,7 +47,7 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
         categoria,
         ativo: ativo.toUpperCase().trim(),
         operacao: operacao || null,
-        operando,
+        operando: preEntrada,
         corretora: corretora || null,
         comentario: comentario.trim() || null,
       })
@@ -132,6 +132,28 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={preEntrada}
+            onClick={() => setPreEntrada(!preEntrada)}
+            className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
+              preEntrada
+                ? 'bg-accent-gold border-accent-gold text-bg-primary'
+                : 'bg-bg-primary border-border'
+            }`}
+          >
+            {preEntrada && <span className="text-xs font-bold">✓</span>}
+          </button>
+          <label
+            className="text-sm text-text-secondary cursor-pointer"
+            onClick={() => setPreEntrada(!preEntrada)}
+          >
+            Pré-entrada
+          </label>
         </div>
 
         <div>
