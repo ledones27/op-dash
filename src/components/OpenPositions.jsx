@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ArrowUpRight, ArrowDownRight, Loader2, Pencil, Trash2, LogOut, Camera } from 'lucide-react'
-import { calcUnrealizedPnl, calcUnrealizedResult, fmtUSD, fmtPct, fmtPrice, parseLocalDate } from '../utils/calculations'
+import { calcUnrealizedPnl, calcUnrealizedResult, fmtUSD, fmtPct, fmtPrice, parseLocalDate, localDateString } from '../utils/calculations'
 import AssetLogo from './AssetLogo'
 
 const CATEGORIES = [
@@ -246,7 +246,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
       document.body.removeChild(exportEl)
 
       const link = document.createElement('a')
-      link.download = `Posicoes_Abertas_${new Date().toISOString().slice(0, 10)}.png`
+      link.download = `Posicoes_Abertas_${localDateString()}.png`
       link.href = canvas.toDataURL('image/png')
       link.click()
     } catch (err) {

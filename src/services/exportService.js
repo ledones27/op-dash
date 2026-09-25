@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx'
+import { localDateString } from '../utils/calculations'
 
 export function exportFilteredTrades(trades, filters = {}) {
   const wb = XLSX.utils.book_new()
@@ -46,7 +47,7 @@ export function exportFilteredTrades(trades, filters = {}) {
   if (statusFilter && statusFilter !== 'Todos') parts.push(statusFilter === 'Fechada' ? 'Fechados' : 'Abertos')
   if (exitMonth) parts.push(exitMonth)
   else if (dateFrom || dateTo) parts.push([dateFrom, dateTo].filter(Boolean).join('_'))
-  if (parts.length === 1) parts.push(new Date().toISOString().slice(0, 10))
+  if (parts.length === 1) parts.push(localDateString())
   XLSX.writeFile(wb, `${parts.join('_')}.xlsx`)
 }
 
@@ -219,6 +220,6 @@ export function exportToExcel(trades, resultados, watchlist) {
   }
 
   // Gerar e baixar
-  const today = new Date().toISOString().slice(0, 10)
+  const today = localDateString()
   XLSX.writeFile(wb, `Operacoes_Backup_${today}.xlsx`)
 }

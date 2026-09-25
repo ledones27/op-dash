@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Modal from './Modal'
 import DateInput from './DateInput'
 import TickerSearch from './TickerSearch'
+import { localDateString } from '../utils/calculations'
 
 const CATEGORIES = ['Ações', 'Cripto', 'Commodities', 'Índices']
 
@@ -44,7 +45,7 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
       })
       setShowExit(!!(editTrade.dataSaida || editTrade.precoSaida))
     } else {
-      setForm({ ...emptyForm, dataEntrada: new Date().toISOString().split('T')[0] })
+      setForm({ ...emptyForm, dataEntrada: localDateString() })
       setShowExit(false)
     }
     setError('')

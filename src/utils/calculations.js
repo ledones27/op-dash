@@ -92,6 +92,14 @@ export function parseLocalDate(dateStr) {
   return new Date(y, m - 1, d)
 }
 
+/** Data de calendário no fuso horário do dispositivo que acessa o dashboard. */
+export function localDateString(date = new Date()) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 /**
  * Formata data YYYY-MM-DD para exibição pt-BR sem bug de timezone.
  */

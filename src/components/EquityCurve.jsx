@@ -5,7 +5,7 @@ import {
 } from 'recharts'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import { buildEquityCurve, buildCapitalTimeline, fmtUSD, fmtDate } from '../utils/calculations'
+import { buildEquityCurve, buildCapitalTimeline, fmtUSD, fmtDate, localDateString } from '../utils/calculations'
 import StatCard from './StatCard'
 import { DollarSign, TrendingUp, AlertTriangle } from 'lucide-react'
 
@@ -48,10 +48,10 @@ function getDateCutoff(days) {
   if (days == null) return null
   const d = new Date()
   d.setDate(d.getDate() - days)
-  return d.toISOString().slice(0, 10)
+  return localDateString(d)
 }
 
-export default function EquityCurve({ allTrades, openPositions = [] }) {
+export default function EquityCurve({ allTrades, openPositions = [], hideValues = false }) {
   const [period, setPeriod] = useState('1M')
   const [customFrom, setCustomFrom] = useState('')
   const [customTo, setCustomTo] = useState('')
@@ -71,6 +71,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
   const [showTotal, setShowTotal] = useState(true)
   const [visibleCats, setVisibleCats] = useState(new Set())
   const [corretoraFilter, setCorretoraFilter] = useState(new Set())
+  const [operandoOnly, setOperandoOnly] = useState(false)
 
   const toggleCat = useCallback((key) => {
     setVisibleCats(prev => {
@@ -101,9 +102,12 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
 
   const cutoffEnd = isCustomPeriod ? customTo : null
 
-  const baseTrades = useMemo(() =>
-    corretoraFilter.size > 0 ? allTrades.filter(t => corretoraFilter.has(t.corretora)) : allTrades,
-  [allTrades, corretoraFilter])
+  const matchesFilters = useCallback(t =>
+    (corretoraFilter.size === 0 || corretoraFilter.has(t.corretora)) &&
+    (!operandoOnly || t.operando === true),
+  [corretoraFilter, operandoOnly])
+  const baseTrades = useMemo(() => allTrades.filter(matchesFilters), [allTrades, matchesFilters])
+  const filteredOpenPositions = useMemo(() => openPositions.filter(matchesFilters), [openPositions, matchesFilters])
 
   // Full data (unfiltered)
   const curveAll = useMemo(() => buildEquityCurve(baseTrades), [baseTrades])
@@ -190,8 +194,8 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
     return [fmtUSD(real), label]
   }
 
-  // Capital stats (always from current open positions, not filtered)
-  const currentCapital = openPositions.reduce((sum, t) => sum + (t.aporte || 0), 0)
+  // Capital atual das posições abertas que correspondem aos filtros ativos
+  const currentCapital = filteredOpenPositions.reduce((sum, t) => sum + (t.aporte || 0), 0)
 
   const scaleButtonClass = (active) =>
     `px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
@@ -202,7 +206,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
     <div className="space-y-4">
       {/* Period filter buttons */}
       <div className="flex items-center justify-end gap-2 flex-wrap">
-        <div className="flex gap-1 mr-auto">
+        <div className="flex flex-wrap gap-1 mr-auto">
           {[
             { name: 'Quantfury', active: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' },
             { name: 'Hyperliquid', active: 'bg-white/10 text-white border-white/30' },
@@ -226,6 +230,18 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
               {b.name}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => setOperandoOnly(v => !v)}
+            aria-pressed={operandoOnly}
+            className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors border ${
+              operandoOnly
+                ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/40'
+                : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover border-transparent'
+            }`}
+          >
+            Operando
+          </button>
         </div>
         {isCustomPeriod && customFrom && (
           <span className="text-xs text-text-muted">
@@ -291,7 +307,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
       </div>
 
       {noData && (
-        <div className="card text-text-muted text-center py-12">Nenhum trade fechado ainda.</div>
+        <div className="card text-text-muted text-center py-12">Nenhum trade fechado para os filtros selecionados.</div>
       )}
 
       {!noData && (
@@ -317,9 +333,11 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
               Auto
             </button>
           </div>
-          <span className={`stat-value text-lg ${curve.at(-1)?.acumulado >= 0 ? 'positive' : 'negative'}`}>
-            {fmtUSD(curve.at(-1)?.acumulado)}
-          </span>
+          {!hideValues && (
+            <span className={`stat-value text-lg ${curve.at(-1)?.acumulado >= 0 ? 'positive' : 'negative'}`}>
+              {fmtUSD(curve.at(-1)?.acumulado)}
+            </span>
+          )}
         </div>
 
         {/* Custom legend with toggle */}
@@ -370,11 +388,12 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
                 scale={isLog ? 'log' : 'linear'}
                 domain={[domainMin, domainMax]}
                 allowDataOverflow
-                tick={{ fill: '#848e9c', fontSize: 11 }}
+                tick={hideValues ? false : { fill: '#848e9c', fontSize: 11 }}
                 tickFormatter={formatYTick}
               />
               <Tooltip
                 {...tooltipStyle}
+                content={hideValues ? () => null : undefined}
                 formatter={formatTooltipValue}
                 labelFormatter={l => l}
               />
@@ -417,9 +436,10 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
             <BarChart data={chartData} barSize={4}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e2a3a" />
               <XAxis dataKey="label" tick={{ fill: '#848e9c', fontSize: 9 }} interval="preserveStartEnd" />
-              <YAxis tick={{ fill: '#848e9c', fontSize: 11 }} tickFormatter={v => `$${v}`} />
+              <YAxis tick={hideValues ? false : { fill: '#848e9c', fontSize: 11 }} tickFormatter={v => `$${v}`} />
               <Tooltip
                 {...tooltipStyle}
+                content={hideValues ? () => null : undefined}
                 formatter={v => fmtUSD(v)}
                 labelFormatter={(_, payload) => payload?.[0]?.payload?.ativo || ''}
               />
@@ -445,21 +465,24 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
             label="Capital em Aberto"
             value={fmtUSD(currentCapital)}
             icon={DollarSign}
+            isUsd
           />
           <StatCard
             label="Pico Histórico"
             value={fmtUSD(capitalAll.peakCapital)}
             icon={TrendingUp}
             colorClass="text-accent-gold"
+            isUsd
           />
           <StatCard
             label="Posições Abertas"
-            value={openPositions.length}
+            value={filteredOpenPositions.length}
             icon={AlertTriangle}
           />
           <StatCard
             label="Aporte Médio"
-            value={fmtUSD(openPositions.length > 0 ? currentCapital / openPositions.length : 0)}
+            value={fmtUSD(filteredOpenPositions.length > 0 ? currentCapital / filteredOpenPositions.length : 0)}
+            isUsd
           />
         </div>
 
@@ -478,9 +501,10 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#1e2a3a" />
                   <XAxis dataKey="label" tick={{ fill: '#848e9c', fontSize: 10 }} interval="preserveStartEnd" />
-                  <YAxis tick={{ fill: '#848e9c', fontSize: 11 }} tickFormatter={v => `$${v}`} />
+                  <YAxis tick={hideValues ? false : { fill: '#848e9c', fontSize: 11 }} tickFormatter={v => `$${v}`} />
                   <Tooltip
                     {...tooltipStyle}
+                    content={hideValues ? () => null : undefined}
                     formatter={v => [fmtUSD(v), 'Capital']}
                   />
                   <ReferenceLine y={capitalAll.peakCapital} stroke="#f0b90b" strokeDasharray="5 5" />
@@ -495,7 +519,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
                 </AreaChart>
               </ResponsiveContainer>
               <p className="text-xs text-text-muted mt-2">
-                Linha dourada = pico histórico ({fmtUSD(capitalAll.peakCapital)})
+                Linha dourada = pico histórico {!hideValues && `(${fmtUSD(capitalAll.peakCapital)})`}
               </p>
             </>
           ) : (

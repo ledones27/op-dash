@@ -59,6 +59,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
   const [monthPickerOpen, setMonthPickerOpen] = useState(false)
   const monthPickerRef = useRef(null)
   const [corretoraFilter, setCorretoraFilter] = useState(new Set())
+  const [operandoOnly, setOperandoOnly] = useState(false)
   const [sortKey, setSortKey] = useState('dataEntrada')
   const [sortDir, setSortDir] = useState('desc')
   const [page, setPage] = useState(1)
@@ -103,12 +104,13 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
     if (dateTo) result = result.filter(t => t.dataEntrada && t.dataEntrada <= dateTo)
     if (exitMonth) result = result.filter(t => t.dataSaida && t.dataSaida.startsWith(exitMonth))
     if (corretoraFilter.size > 0) result = result.filter(t => corretoraFilter.has(t.corretora))
+    if (operandoOnly) result = result.filter(t => t.operando === true)
     result.sort((a, b) => {
       const cmp = compareValues(a, b, sortKey)
       return sortDir === 'asc' ? cmp : -cmp
     })
     return result
-  }, [trades, catFilter, statusFilter, dateFrom, dateTo, exitMonth, corretoraFilter, sortKey, sortDir])
+  }, [trades, catFilter, statusFilter, dateFrom, dateTo, exitMonth, corretoraFilter, operandoOnly, sortKey, sortDir])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
@@ -128,7 +130,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
     <div className="space-y-4">
       {/* Filters */}
       <div className="card space-y-3">
-        {/* Row 1: Categoria + Status + Ações */}
+        {/* Row 1: Categoria + Status */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <Filter className="w-4 h-4 text-text-muted shrink-0" />
           <div className="flex flex-wrap gap-1">
@@ -162,7 +164,9 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
               </button>
             ))}
           </div>
-          <span className="text-border hidden sm:inline">|</span>
+        </div>
+        {/* Row 2: Corretoras + Operando + Ações */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t border-border/50 pt-3">
           {[
             { name: 'Quantfury', active: 'bg-emerald-500/15 text-emerald-400' },
             { name: 'Hyperliquid', active: 'bg-white/10 text-white' },
@@ -181,6 +185,18 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
               {b.name}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => { setOperandoOnly(v => !v); setPage(1) }}
+            aria-pressed={operandoOnly}
+            className={`px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              operandoOnly
+                ? 'bg-accent-gold/15 text-accent-gold'
+                : 'text-text-secondary hover:bg-bg-hover'
+            }`}
+          >
+            Operando
+          </button>
           <span className="text-text-muted text-xs ml-auto">{filtered.length} trades</span>
           {onExport && (
           <button
@@ -200,7 +216,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
           </button>
           )}
         </div>
-        {/* Row 2: Datas + Mês saída */}
+        {/* Row 3: Datas + Mês saída */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t border-border/50 pt-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-text-muted text-xs">De:</span>
