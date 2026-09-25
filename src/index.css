@@ -45,6 +45,16 @@
   filter: blur(0);
 }
 
+/* Os rótulos de eixo do Recharts são textos SVG, fora dos cartões. */
+.hide-values .privacy-y-axis .recharts-cartesian-axis-tick-value {
+  filter: blur(8px);
+  user-select: none;
+  transition: filter 0.2s ease;
+}
+.hide-values .privacy-y-axis .recharts-cartesian-axis-tick-value:hover {
+  filter: blur(0);
+}
+
 /* ─── Export mode: ocultar valores em $ ──────────────── */
 .export-mode .v-usd { display: none !important; }
 .export-mode [data-no-export] { display: none !important; }

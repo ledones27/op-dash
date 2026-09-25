@@ -154,7 +154,7 @@ export default function Overview({ resultados, openPositions, prices }) {
                   <Cell key={i} fill={entry.fill} />
                 ))}
               </Pie>
-              <Tooltip {...tooltipStyle} formatter={v => fmtUSD(v)} />
+              <Tooltip {...tooltipStyle} formatter={v => <span className="v-usd">{fmtUSD(v)}</span>} />
               <Legend
                 iconType="circle"
                 iconSize={8}
@@ -170,8 +170,8 @@ export default function Overview({ resultados, openPositions, prices }) {
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={resultData} barSize={28}>
               <XAxis dataKey="name" tick={{ fill: '#848e9c', fontSize: 11 }} />
-              <YAxis tick={{ fill: '#848e9c', fontSize: 11 }} tickFormatter={v => `$${v}`} />
-              <Tooltip {...tooltipStyle} formatter={v => fmtUSD(v)} />
+              <YAxis className="privacy-y-axis" tick={{ fill: '#848e9c', fontSize: 11 }} tickFormatter={v => `$${v}`} />
+              <Tooltip {...tooltipStyle} formatter={v => <span className="v-usd">{fmtUSD(v)}</span>} />
               <Bar dataKey="resultado" radius={[4, 4, 0, 0]}>
                 {resultData.map((entry, i) => (
                   <Cell key={i} fill={entry.fill} />

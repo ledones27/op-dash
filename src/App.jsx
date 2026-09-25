@@ -169,7 +169,7 @@ export default function App() {
           />
         )
       case 'equity':
-        return <EquityCurve allTrades={ctx.trades} openPositions={ctx.openPositions} hideValues={hideValues} />
+        return <EquityCurve allTrades={ctx.trades} openPositions={ctx.openPositions} />
       case 'watchlist':
         return (
           <Watchlist

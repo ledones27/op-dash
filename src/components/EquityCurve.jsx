@@ -51,7 +51,7 @@ function getDateCutoff(days) {
   return localDateString(d)
 }
 
-export default function EquityCurve({ allTrades, openPositions = [], hideValues = false }) {
+export default function EquityCurve({ allTrades, openPositions = [] }) {
   const [period, setPeriod] = useState('1M')
   const [customFrom, setCustomFrom] = useState('')
   const [customTo, setCustomTo] = useState('')
@@ -191,7 +191,7 @@ export default function EquityCurve({ allTrades, openPositions = [], hideValues 
   const formatTooltipValue = (v, name) => {
     const real = isLog ? v - logOffset : v
     const label = name === 'acumulado' ? 'Total' : (CAT_LABELS[name] || name)
-    return [fmtUSD(real), label]
+    return [<span className="v-usd">{fmtUSD(real)}</span>, label]
   }
 
   // Capital atual das posições abertas que correspondem aos filtros ativos
@@ -333,11 +333,9 @@ export default function EquityCurve({ allTrades, openPositions = [], hideValues 
               Auto
             </button>
           </div>
-          {!hideValues && (
-            <span className={`stat-value text-lg ${curve.at(-1)?.acumulado >= 0 ? 'positive' : 'negative'}`}>
-              {fmtUSD(curve.at(-1)?.acumulado)}
-            </span>
-          )}
+          <span className={`stat-value text-lg v-usd ${curve.at(-1)?.acumulado >= 0 ? 'positive' : 'negative'}`}>
+            {fmtUSD(curve.at(-1)?.acumulado)}
+          </span>
         </div>
 
         {/* Custom legend with toggle */}
@@ -385,15 +383,15 @@ export default function EquityCurve({ allTrades, openPositions = [], hideValues 
                 interval="preserveStartEnd"
               />
               <YAxis
+                className="privacy-y-axis"
                 scale={isLog ? 'log' : 'linear'}
                 domain={[domainMin, domainMax]}
                 allowDataOverflow
-                tick={hideValues ? false : { fill: '#848e9c', fontSize: 11 }}
+                tick={{ fill: '#848e9c', fontSize: 11 }}
                 tickFormatter={formatYTick}
               />
               <Tooltip
                 {...tooltipStyle}
-                content={hideValues ? () => null : undefined}
                 formatter={formatTooltipValue}
                 labelFormatter={l => l}
               />
@@ -436,11 +434,10 @@ export default function EquityCurve({ allTrades, openPositions = [], hideValues 
             <BarChart data={chartData} barSize={4}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e2a3a" />
               <XAxis dataKey="label" tick={{ fill: '#848e9c', fontSize: 9 }} interval="preserveStartEnd" />
-              <YAxis tick={hideValues ? false : { fill: '#848e9c', fontSize: 11 }} tickFormatter={v => `$${v}`} />
+              <YAxis className="privacy-y-axis" tick={{ fill: '#848e9c', fontSize: 11 }} tickFormatter={v => `$${v}`} />
               <Tooltip
                 {...tooltipStyle}
-                content={hideValues ? () => null : undefined}
-                formatter={v => fmtUSD(v)}
+                formatter={v => <span className="v-usd">{fmtUSD(v)}</span>}
                 labelFormatter={(_, payload) => payload?.[0]?.payload?.ativo || ''}
               />
               <Bar dataKey="resultado" radius={[2, 2, 0, 0]}>
@@ -501,11 +498,10 @@ export default function EquityCurve({ allTrades, openPositions = [], hideValues 
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#1e2a3a" />
                   <XAxis dataKey="label" tick={{ fill: '#848e9c', fontSize: 10 }} interval="preserveStartEnd" />
-                  <YAxis tick={hideValues ? false : { fill: '#848e9c', fontSize: 11 }} tickFormatter={v => `$${v}`} />
+                  <YAxis className="privacy-y-axis" tick={{ fill: '#848e9c', fontSize: 11 }} tickFormatter={v => `$${v}`} />
                   <Tooltip
                     {...tooltipStyle}
-                    content={hideValues ? () => null : undefined}
-                    formatter={v => [fmtUSD(v), 'Capital']}
+                    formatter={v => [<span className="v-usd">{fmtUSD(v)}</span>, 'Capital']}
                   />
                   <ReferenceLine y={capitalAll.peakCapital} stroke="#f0b90b" strokeDasharray="5 5" />
                   <Area
@@ -519,7 +515,7 @@ export default function EquityCurve({ allTrades, openPositions = [], hideValues 
                 </AreaChart>
               </ResponsiveContainer>
               <p className="text-xs text-text-muted mt-2">
-                Linha dourada = pico histórico {!hideValues && `(${fmtUSD(capitalAll.peakCapital)})`}
+                Linha dourada = pico histórico (<span className="v-usd">{fmtUSD(capitalAll.peakCapital)}</span>)
               </p>
             </>
           ) : (
