@@ -1,3 +1,4 @@
+import useChartEntrance from '../hooks/useChartEntrance'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -88,7 +89,7 @@ function BtcTradeForm({ open, onClose, onSave, editTrade }) {
   const inputClass = "w-full px-3 py-2 rounded-lg bg-bg-primary border border-border text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-gold"
 
   return (
-    <Modal open={open} onClose={onClose} title={isEditing ? 'Editar / Fechar Trade BTC' : 'Nova Entrada BTC'}>
+    <Modal open={open} onClose={onClose} title={isEditing ? 'Editar / Fechar Trade BTC' : 'Nova Entrada BTC'} mobileFullScreen flat>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -143,6 +144,7 @@ function BtcTradeForm({ open, onClose, onSave, editTrade }) {
 }
 
 export default function Bitcoin({ btcTrades, onAdd, onEdit, onDelete, isGuest }) {
+  const chartEntrance = useChartEntrance("bitcoin")
   const [formOpen, setFormOpen] = useState(false)
   const [editingTrade, setEditingTrade] = useState(null)
   const [scaleType, setScaleType] = useState('linear')
@@ -219,11 +221,11 @@ export default function Bitcoin({ btcTrades, onAdd, onEdit, onDelete, isGuest })
 
   useEffect(() => {
     const el = tableContainerRef.current
-    if (el) el.scrollTop = el.scrollHeight
+    if (el) el.scrollTop = window.matchMedia('(min-width: 640px)').matches ? el.scrollHeight : 0
   }, [computed])
 
   return (
-    <div className="space-y-4">
+    <div className="bitcoin-flat-page mobile-flat-page space-y-6 sm:space-y-4">
       {/* Trade table */}
       <div className="card">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
@@ -260,7 +262,7 @@ export default function Bitcoin({ btcTrades, onAdd, onEdit, onDelete, isGuest })
         </div>
         <div ref={tableContainerRef} className="overflow-x-auto overflow-y-auto max-h-[420px]">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-bg-card z-10">
+            <thead className="sticky top-0 bg-bg-card sm:bg-bg-primary z-10">
               <tr className="text-text-muted text-xs uppercase border-b border-border">
                 <th className="text-left py-3 px-2">#</th>
                 <th className="text-left py-3 px-2">Entrada</th>
@@ -304,7 +306,7 @@ export default function Bitcoin({ btcTrades, onAdd, onEdit, onDelete, isGuest })
                   </td>
                   {onEdit && (
                     <td className="py-2.5 px-2 text-center">
-                      <div className="flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex justify-center gap-1">
                         <button
                           onClick={() => handleOpenEdit(t)}
                           className="p-1.5 rounded hover:bg-bg-hover text-text-muted hover:text-accent-blue transition-colors"
@@ -393,7 +395,7 @@ export default function Bitcoin({ btcTrades, onAdd, onEdit, onDelete, isGuest })
                 formatter={(v) => [fmtBancaFull(v), 'Banca']}
                 labelFormatter={l => l}
               />
-              <Area
+              <Area {...chartEntrance("total")}
                 type="monotone"
                 dataKey="banca"
                 stroke="#f0b90b"

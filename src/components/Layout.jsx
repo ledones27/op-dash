@@ -10,7 +10,7 @@ const NAV_ITEMS = [
   { id: 'bitcoin', label: 'Bitcoin', mobileLabel: 'Bitcoin', icon: Bitcoin },
 ]
 
-export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, refreshing, onNewTrade, onLogout, hideValues, onToggleHide, onViewAsset, allTickers, isGuest, children }) {
+export default function Layout({ activeTab, onTabChange, onRefresh, refreshing, onNewTrade, onLogout, hideValues, onToggleHide, onViewAsset, allTickers, isGuest, compactTop, children }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const inputRef = useRef(null)
@@ -31,21 +31,39 @@ export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, 
       {/* Header */}
       <header className="border-b border-border bg-bg-card/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-14 sm:justify-start sm:gap-3">
+          <div className="flex items-center justify-between h-14 sm:justify-start sm:gap-1 lg:gap-2">
             <img src="/logo1.webp" alt="OP" className="order-1 h-8 w-auto shrink-0" />
-            <h1 className="order-2 text-lg font-bold tracking-tight hidden sm:block">Operações</h1>
+            <nav className="order-2 hidden min-w-0 flex-1 items-center overflow-x-auto sm:flex" aria-label="Páginas">
+              {NAV_ITEMS.map(item => {
+                const Icon = item.icon
+                const active = activeTab === item.id
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onTabChange(item.id)}
+                    aria-label={item.label}
+                    aria-current={active ? 'page' : undefined}
+                    className={`flex h-14 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-2 text-xs font-medium transition-colors xl:px-3 xl:text-sm ${active ? 'border-accent-gold text-accent-gold' : 'border-transparent text-text-secondary hover:text-text-primary hover:border-border'}`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="xl:hidden">{item.mobileLabel}</span>
+                    <span className="hidden xl:inline">{item.label}</span>
+                  </button>
+                )
+              })}
+            </nav>
             <button
               onClick={onLogout}
-              className={`order-2 p-2 rounded-lg hover:bg-accent-red/10 transition-colors text-text-muted hover:text-accent-red sm:order-5 ${lastUpdate ? '' : 'sm:ml-auto'}`}
+              className="order-2 shrink-0 p-2 rounded-lg hover:bg-accent-red/10 transition-colors text-text-secondary hover:text-accent-red sm:order-6"
               title="Sair"
               aria-label="Sair"
             >
               <LogOut className="w-4 h-4" />
             </button>
-            <div className="relative order-3">
+            <div className="relative order-3 shrink-0">
               <button
-                onClick={() => setSearchOpen(true)}
-                className={`p-1.5 rounded-lg hover:bg-bg-hover transition-colors ${searchOpen ? 'text-accent-gold' : 'text-text-muted hover:text-text-primary'} ${searchOpen ? 'sm:hidden' : ''}`}
+                onClick={() => setSearchOpen(open => !open)}
+                className={`p-2 rounded-lg hover:bg-bg-hover transition-colors ${searchOpen ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'}`}
                 title="Buscar ativo"
                 aria-label="Buscar ativo"
               >
@@ -65,11 +83,10 @@ export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, 
                     onBlur={() => setTimeout(() => { setSearchOpen(false); setSearchQuery('') }, 200)}
                     placeholder="Buscar ativo..."
                     aria-label="Buscar ativo"
-                    className="fixed left-4 right-4 top-14 z-50 w-auto px-3 py-1.5 rounded-lg bg-bg-primary border border-border text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-gold transition-colors sm:static sm:w-52"
-                    autoFocus
+                    className="fixed left-4 right-4 top-14 z-50 w-auto px-3 py-1.5 rounded-lg bg-bg-primary border border-border text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-gold transition-colors sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:w-64"
                   />
                   {searchResults.length > 0 && (
-                    <div className="fixed left-4 right-4 top-24 z-50 bg-bg-card border border-border rounded-lg shadow-lg overflow-hidden sm:absolute sm:left-0 sm:right-auto sm:top-full sm:mt-1 sm:w-full">
+                    <div className="fixed left-4 right-4 top-24 z-50 bg-bg-card border border-border rounded-lg shadow-lg overflow-hidden sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-14 sm:w-64">
                       {searchResults.map(ticker => (
                         <button
                           key={ticker}
@@ -84,14 +101,9 @@ export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, 
                 </>
               )}
             </div>
-            {lastUpdate && (
-              <span className="order-4 ml-auto text-xs text-text-muted hidden sm:block">
-                Preços: {lastUpdate.toLocaleTimeString('pt-BR')}
-              </span>
-            )}
             <button
               onClick={onToggleHide}
-              className={`order-4 p-2 rounded-lg hover:bg-bg-hover transition-colors sm:order-6 ${hideValues ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'}`}
+              className={`order-4 shrink-0 p-2 rounded-lg hover:bg-bg-hover transition-colors ${hideValues ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary'}`}
               title={hideValues ? 'Mostrar valores' : 'Esconder valores'}
               aria-label={hideValues ? 'Mostrar valores' : 'Esconder valores'}
             >
@@ -100,21 +112,21 @@ export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, 
             <button
               onClick={onRefresh}
               disabled={refreshing}
-              className="order-5 p-2 rounded-lg hover:bg-bg-hover transition-colors text-text-secondary hover:text-text-primary disabled:opacity-50 sm:order-7"
+              className="order-5 shrink-0 p-2 rounded-lg hover:bg-bg-hover transition-colors text-text-secondary hover:text-text-primary disabled:opacity-50"
               title="Atualizar preços"
               aria-label="Atualizar preços"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
             </button>
             {isGuest ? (
-              <span className="order-6 px-2 py-1.5 rounded-lg bg-bg-hover text-text-muted text-[10px] font-medium sm:order-8 sm:px-3 sm:text-xs">
+              <span className="order-6 shrink-0 px-2 py-1.5 rounded-lg bg-bg-hover text-text-muted text-[10px] font-medium sm:order-7 sm:px-3 sm:text-xs">
                 Convidado
               </span>
             ) : (
               <button
                 onClick={onNewTrade}
                 aria-label="Novo Trade"
-                className="order-6 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-accent-gold text-bg-primary text-sm font-semibold hover:bg-accent-gold/90 transition-colors sm:order-8"
+                className="order-6 shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-accent-gold text-bg-primary text-sm font-semibold hover:bg-accent-gold/90 transition-colors sm:order-7"
               >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Novo Trade</span>
@@ -125,7 +137,7 @@ export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, 
       </header>
 
       {/* Nav tabs */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-bg-card/95 backdrop-blur-sm sm:static sm:border-t-0 sm:border-b sm:bg-bg-card/50 sm:backdrop-blur-none" aria-label="Páginas">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-bg-card/95 backdrop-blur-sm sm:hidden" aria-label="Páginas">
         <div className="max-w-[1440px] mx-auto px-1 sm:px-6" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
           <div className="grid grid-cols-6 sm:flex sm:gap-1">
             {NAV_ITEMS.map(item => {
@@ -154,7 +166,7 @@ export default function Layout({ activeTab, onTabChange, lastUpdate, onRefresh, 
       </nav>
 
       {/* Content */}
-      <main className="max-w-[1440px] mx-auto px-4 pt-6 pb-28 sm:px-6 sm:py-6">
+      <main className={`max-w-[1440px] mx-auto px-4 pb-28 sm:px-6 sm:py-6 ${compactTop ? 'pt-0' : 'pt-6'}`}>
         {children}
       </main>
     </div>

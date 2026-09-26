@@ -142,7 +142,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
   return (
     <div className="-mx-4 space-y-6 sm:mx-0 sm:space-y-4">
       {/* Filters */}
-      <div className="card rounded-none border-x-0 border-t-0 bg-transparent px-4 sm:rounded-xl sm:border sm:bg-bg-card">
+      <div className="border-b border-border bg-transparent px-4 py-5 sm:px-5">
         <div className="border-b border-border/50 pb-3 sm:flex sm:items-center">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold text-text-primary">Histórico</h2>
@@ -316,7 +316,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
             {periodOpen && (
               <div
                 id="history-period-panel"
-                className="absolute right-0 top-full z-50 mt-2 rounded-xl border border-border bg-bg-card p-4 shadow-xl"
+                className="absolute right-0 top-full z-50 mt-2 border border-border bg-bg-primary p-4"
                 style={{ width: 'min(380px, calc(100vw - 48px))' }}
               >
                 <div className="text-xs font-semibold text-text-primary mb-2">Data de entrada</div>
@@ -336,7 +336,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                     type="button"
                     onClick={() => setMonthPickerOpen(v => !v)}
                     aria-expanded={monthPickerOpen}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border ${
+                    className={`flex w-full items-center gap-1.5 px-0 py-2 text-xs font-medium border-b ${
                       exitMonth
                         ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/40'
                         : 'bg-bg-primary text-text-secondary border-border hover:bg-bg-hover'
@@ -349,7 +349,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                     }
                   </button>
                   {monthPickerOpen && (
-                    <div className="mt-2 bg-bg-card border border-border rounded-xl p-2">
+                    <div className="mt-2 border-t border-border pt-2">
                       <DatePicker
                         inline
                         selected={exitMonthAsDate}
@@ -425,7 +425,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
       </div>
 
       {/* Table */}
-      <div className="card overflow-x-auto rounded-none border-x-0 border-t-0 bg-transparent p-0 sm:rounded-xl sm:border sm:bg-bg-card sm:p-5">
+      <div className="overflow-x-auto border-b border-border bg-transparent p-0 sm:p-5">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-text-muted text-xs uppercase border-b border-border">
@@ -530,7 +530,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                   </td>
                   {(onEdit || onDelete) && (
                   <td className="py-2.5 px-2 text-center">
-                    <div className="flex justify-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
+                    <div className="flex justify-center gap-1">
                       {onEdit && (
                       <button
                         onClick={() => onEdit(t)}

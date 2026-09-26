@@ -1,3 +1,4 @@
+import useChartEntrance from '../hooks/useChartEntrance'
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import {
   ComposedChart, AreaChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -52,6 +53,7 @@ function getDateCutoff(days) {
 }
 
 export default function EquityCurve({ allTrades, openPositions = [] }) {
+  const chartEntrance = useChartEntrance("equity")
   const [period, setPeriod] = useState('1M')
   const [customFrom, setCustomFrom] = useState('')
   const [customTo, setCustomTo] = useState('')
@@ -204,9 +206,9 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
     }`
 
   return (
-    <div className="-mx-4 space-y-6 sm:mx-0 sm:space-y-4">
+    <div className="equity-flat-page -mx-4 space-y-6 sm:mx-0 sm:space-y-4">
       {/* Period filter buttons */}
-      <div className="flex flex-wrap items-center justify-end gap-3 border-b border-border px-4 pb-4 sm:gap-2 sm:border-0 sm:px-0 sm:pb-0">
+      <div className="flex flex-wrap items-center justify-end gap-3 border-b border-border px-4 pb-4 sm:gap-2 sm:px-5">
         <div className="w-full sm:mr-auto sm:w-auto">
           <button
             type="button"
@@ -274,7 +276,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
             {customTo && ` — ${fmtDate(customTo, { day: '2-digit', month: 'short', year: 'numeric' })}`}
           </span>
         )}
-        <div className="flex w-full gap-1 sm:w-auto sm:rounded-lg sm:border sm:border-border sm:bg-bg-card sm:p-1">
+        <div className="flex w-full gap-1 sm:w-auto">
           {PERIOD_OPTIONS.map(opt => (
             <button
               key={opt.key}
@@ -421,7 +423,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
                 labelFormatter={l => l}
               />
               {showTotal && (
-              <Area
+              <Area {...chartEntrance("total")}
                 type="monotone"
                 dataKey="acumulado"
                 stroke="#ffffff"
@@ -433,7 +435,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
               )}
               {CAT_KEYS.map(key => (
                 visibleCats.has(key) && (
-                  <Line
+                  <Line {...chartEntrance(`category:${key}`)}
                     key={key}
                     type="monotone"
                     dataKey={key}
@@ -465,7 +467,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
                 formatter={v => <span className="v-usd">{fmtUSD(v)}</span>}
                 labelFormatter={(_, payload) => payload?.[0]?.payload?.ativo || ''}
               />
-              <Bar dataKey="resultado" radius={[2, 2, 0, 0]}>
+              <Bar {...chartEntrance("trades")} dataKey="resultado" radius={[2, 2, 0, 0]}>
                 {chartData.map((entry, i) => (
                   <Cell key={i} fill={entry.resultado >= 0 ? '#0ecb81' : '#f6465d'} />
                 ))}
@@ -478,11 +480,11 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
       </div>
 
       {/* Capital Allocation Section */}
-      <div className="sm:border-t sm:border-border sm:pt-4">
+      <div>
         <h2 className="mb-4 border-b border-border px-4 pb-3 text-sm font-semibold text-text-secondary sm:border-0 sm:px-0 sm:pb-0">Capital Alocado</h2>
 
         {/* Capital Stats */}
-        <div className="mb-6 grid grid-cols-2 sm:mb-4 sm:grid-cols-4 sm:gap-3">
+        <div className="equity-capital-stats mb-6 grid grid-cols-2 sm:mb-4 sm:grid-cols-4">
           <StatCard
             className="rounded-none border-0 border-b border-border bg-transparent p-4 sm:rounded-xl sm:border sm:bg-bg-card sm:p-5"
             label="Capital em Aberto"
@@ -533,7 +535,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
                     formatter={v => [<span className="v-usd">{fmtUSD(v)}</span>, 'Capital']}
                   />
                   <ReferenceLine y={capitalAll.peakCapital} stroke="#f0b90b" strokeDasharray="5 5" />
-                  <Area
+                  <Area {...chartEntrance("capital")}
                     type="stepAfter"
                     dataKey="capital"
                     stroke="#1e80ff"

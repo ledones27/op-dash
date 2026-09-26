@@ -364,7 +364,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
   return (
     <div className="-mx-4 space-y-6 sm:mx-0 sm:space-y-4">
       {/* Summary bar */}
-      <div className="card grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-3 rounded-none border-0 border-b border-border bg-transparent p-4 sm:flex sm:flex-wrap sm:items-center sm:gap-6 sm:rounded-xl sm:border sm:bg-bg-card sm:p-5">
+      <div className="positions-summary grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-3 border-b border-border p-4 sm:flex sm:flex-wrap sm:items-center sm:gap-6 sm:p-5">
         <div className="order-1 flex items-center gap-1 sm:block">
           <span className="stat-label mt-0 w-[76px] leading-tight sm:mt-1 sm:w-auto sm:leading-normal">Posições Abertas</span>
           <p className="stat-value text-xl sm:text-2xl">{positions.length}</p>
@@ -399,15 +399,15 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
       </div>
 
       {/* Colunas por categoria */}
-      <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+      <div className="positions-categories grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-0 lg:grid-cols-4">
         {CATEGORIES.map(cat => {
           const catPositions = grouped[cat.key] || []
           const catAporte = catPositions.reduce((s, p) => s + (p.aporte || 0), 0)
 
           return (
-            <div key={cat.key} className={`card rounded-none border-0 border-b border-border bg-transparent p-4 sm:rounded-xl sm:border sm:bg-bg-card sm:p-5 ${cat.border}`}>
+            <div key={cat.key} className="border-b border-border p-4 sm:p-5">
               {/* Category header */}
-              <div className="flex items-center justify-between border-b border-border/70 pb-2 sm:mb-3 sm:border-0 sm:pb-0">
+              <div className="flex items-center justify-between border-b border-border/70 pb-2">
                 <h3 className={`text-sm font-semibold ${cat.color}`}>{cat.key}</h3>
                 <span className="text-xs text-text-muted">{catPositions.length} pos.</span>
               </div>
@@ -415,7 +415,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
               {catPositions.length === 0 ? (
                 <p className="text-text-muted text-xs text-center py-4">Nenhuma posição</p>
               ) : (
-                <div className="sm:space-y-2">
+                <div>
                   {[...catPositions]
                     .sort((a, b) => a.ativo.localeCompare(b.ativo))
                     .map((p, i) => {
@@ -429,7 +429,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                       return (
                         <div
                           key={p.id || i}
-                          className={`group border-b border-border/70 py-3 last:border-b-0 hover:bg-bg-hover/40 transition-colors sm:rounded-lg sm:border-0 sm:px-3 sm:py-2.5 ${cat.bg}`}
+                          className="group border-b border-border/70 py-3 last:border-b-0 hover:bg-bg-hover/40 transition-colors sm:px-3 sm:py-2.5"
                         >
                           {/* Linha 1: Ativo + Operação + Ações */}
                           <div className="flex items-center justify-between mb-1.5">
@@ -531,7 +531,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                     })}
 
                   {/* Subtotal da categoria */}
-                  <div className="pt-2 v-usd sm:mt-2 sm:border-t sm:border-border/50">
+                  <div className="pt-2 v-usd sm:mt-2">
                     <div className="flex justify-between text-xs text-text-muted">
                       <span>Capital:</span>
                       <span className="font-mono font-medium">{fmtUSD(catAporte)}</span>

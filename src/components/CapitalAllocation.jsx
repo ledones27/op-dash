@@ -1,3 +1,4 @@
+import useChartEntrance from '../hooks/useChartEntrance'
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, ReferenceLine,
@@ -17,6 +18,7 @@ const tooltipStyle = {
 }
 
 export default function CapitalAllocation({ allTrades, openPositions }) {
+  const chartEntrance = useChartEntrance("capital")
   const { timeline, peakCapital } = buildCapitalTimeline(allTrades)
 
   // Capital atualmente alocado (posições abertas)
@@ -79,7 +81,7 @@ export default function CapitalAllocation({ allTrades, openPositions }) {
               formatter={v => [fmtUSD(v), 'Capital']}
             />
             <ReferenceLine y={peakCapital} stroke="#f0b90b" strokeDasharray="5 5" />
-            <Area
+            <Area {...chartEntrance("timeline")}
               type="stepAfter"
               dataKey="capital"
               stroke="#1e80ff"

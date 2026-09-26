@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useTradeData } from './hooks/useTradeData'
+import useDashboardNavigation from './hooks/useDashboardNavigation'
 import LoginScreen from './components/LoginScreen'
 import Layout from './components/Layout'
 import Overview from './components/Overview'
@@ -26,7 +27,7 @@ export default function App() {
   const [isGuest, setIsGuest] = useState(() => {
     return document.cookie.split(';').some(c => c.trim() === 'op_auth=guest')
   })
-  const [activeTab, setActiveTab] = useState('overview')
+  const { activeTab, viewingAsset, changeTab, viewAsset, back } = useDashboardNavigation()
   const [hideValues, setHideValues] = useState(false)
 
   // Modais
@@ -37,7 +38,6 @@ export default function App() {
   const [watchlistFormOpen, setWatchlistFormOpen] = useState(false)
   const [editingWatch, setEditingWatch] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
-  const [viewingAsset, setViewingAsset] = useState(null)
 
   const ctx = useTradeData(authenticated)
 
@@ -140,7 +140,7 @@ export default function App() {
 
   // ─── Tabs ──────────────────────────────────────────────
 
-  const handleViewAsset = (ticker) => setViewingAsset(ticker)
+  const handleViewAsset = viewAsset
 
   const renderTab = () => {
     if (viewingAsset) {
@@ -149,7 +149,7 @@ export default function App() {
           ticker={viewingAsset}
           trades={ctx.trades}
           prices={ctx.prices}
-          onBack={() => setViewingAsset(null)}
+          onBack={back}
         />
       )
     }
@@ -216,7 +216,8 @@ export default function App() {
     <>
       <Layout
         activeTab={activeTab}
-        onTabChange={(tab) => { setActiveTab(tab); setViewingAsset(null) }}
+        onTabChange={changeTab}
+        compactTop={activeTab === 'history' && !viewingAsset}
         lastUpdate={ctx.lastUpdate}
         onRefresh={ctx.refreshPrices}
         refreshing={ctx.refreshing}

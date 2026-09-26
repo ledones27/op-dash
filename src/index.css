@@ -2,6 +2,108 @@
 @tailwind components;
 @tailwind utilities;
 
+.watchlist-touch-card,
+.watchlist-touch-card * {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.watchlist-touch-card * { pointer-events: none; }
+
+.flat-form-dialog.flat-form-dialog {
+  background: #0a0e17;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.flat-form-dialog input:not([type='checkbox']):not([type='radio']),
+.flat-form-dialog textarea {
+  background: transparent;
+  border-radius: 0;
+  border-width: 0 0 1px;
+}
+
+.flat-form-dialog .form-choice {
+  border-radius: 0;
+  border-width: 0 0 1px;
+}
+
+.flat-form-dialog .react-datepicker,
+.flat-form-dialog .react-datepicker__header {
+  border-radius: 0 !important;
+  background: #0a0e17 !important;
+  box-shadow: none !important;
+}
+
+#history-period-panel input {
+  border-radius: 0;
+  border-width: 0 0 1px;
+  background: transparent;
+}
+
+#history-period-panel .react-datepicker {
+  border-radius: 0 !important;
+  background: #0a0e17 !important;
+  box-shadow: none !important;
+}
+
+#history-period-panel .react-datepicker__header {
+  border-radius: 0 !important;
+  background: #0a0e17 !important;
+}
+
+@media (min-width: 640px) {
+  .positions-categories > :nth-child(odd),
+  .watchlist-categories > :nth-child(odd) { border-right-width: 1px; }
+  .positions-summary > div {
+    border-right: 1px solid #1e2a3a;
+    padding-right: 1.5rem;
+  }
+  .overview-flat-page .card,
+  .equity-flat-page .card,
+  .asset-flat-page .card,
+  .bitcoin-flat-page > .card {
+    border-radius: 0;
+    border-width: 0 0 1px;
+    background: transparent;
+    box-shadow: none;
+  }
+  .equity-capital-stats > :not(:last-child) { border-right-width: 1px; }
+  .asset-flat-page .mobile-stat-grid { gap: 0; }
+  .asset-flat-page .mobile-stat-grid > :not(:last-child) { border-right-width: 1px; }
+  .overview-flat-page .mobile-stat-grid,
+  .overview-flat-page .overview-charts { gap: 0; }
+  .overview-flat-page .mobile-stat-grid > :not(:nth-child(3n)) {
+    border-right-width: 1px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .positions-categories > :not(:last-child),
+  .watchlist-categories > :not(:last-child) { border-right-width: 1px; }
+  .overview-flat-page .mobile-stat-grid > :not(:last-child),
+  .overview-flat-page .overview-charts > :not(:last-child) {
+    border-right-width: 1px;
+  }
+}
+
+@media (max-width: 639px) {
+  .mobile-flat-page { margin-inline: -1rem; }
+  .mobile-flat-page .card {
+    border-radius: 0;
+    border-width: 0 0 1px;
+    background: transparent;
+    padding: 1rem;
+    box-shadow: none;
+  }
+  .mobile-flat-page .mobile-stat-grid { gap: 0; }
+  .mobile-flat-page .mobile-stat-grid > :nth-child(odd) {
+    border-right-width: 1px;
+  }
+}
+
 @layer base {
   * {
     scrollbar-width: thin;

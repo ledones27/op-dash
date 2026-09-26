@@ -38,7 +38,6 @@ export default function LoginScreen({ onLogin }) {
           className={`w-full px-4 py-3 rounded-lg bg-bg-primary border text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-gold transition-colors ${
             error ? 'border-accent-red' : 'border-border'
           }`}
-          autoFocus
         />
 
         {error && (

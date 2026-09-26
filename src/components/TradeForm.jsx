@@ -103,7 +103,7 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
   const labelClass = 'block text-xs text-text-secondary font-medium mb-1.5'
 
   return (
-    <Modal open={open} onClose={onClose} title={isEdit ? 'Editar Entrada' : 'Novo Trade'} wide mobileFullScreen={!isEdit}>
+    <Modal open={open} onClose={onClose} title={isEdit ? 'Editar Entrada' : 'Novo Trade'} wide mobileFullScreen flat>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Row 1: Categoria */}
         <div>
@@ -114,7 +114,7 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
                 key={c}
                 type="button"
                 onClick={() => set('categoria', c)}
-                className={`flex-1 py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
+                className={`form-choice flex-1 py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
                   form.categoria === c
                     ? 'bg-accent-gold/20 text-accent-gold border border-accent-gold/40'
                     : 'bg-bg-primary border border-border text-text-secondary hover:border-accent-gold/30'
@@ -133,7 +133,7 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
             <button
               type="button"
               onClick={() => set('operacao', 'LONG')}
-              className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+              className={`form-choice flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
                 form.operacao === 'LONG'
                   ? 'bg-accent-green/20 text-accent-green border border-accent-green/40'
                   : 'bg-bg-primary border border-border text-text-secondary hover:border-accent-green/30'
@@ -144,7 +144,7 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
             <button
               type="button"
               onClick={() => set('operacao', 'SHORT')}
-              className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+              className={`form-choice flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
                 form.operacao === 'SHORT'
                   ? 'bg-accent-red/20 text-accent-red border border-accent-red/40'
                   : 'bg-bg-primary border border-border text-text-secondary hover:border-accent-red/30'
@@ -163,7 +163,6 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
               value={form.ativo}
               onChange={v => set('ativo', v)}
               categoria={form.categoria}
-              autoFocus
             />
           </div>
           <div>
@@ -214,7 +213,7 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
         </div>
 
         {showExit && (
-          <div className="grid grid-cols-2 gap-3 border border-border/50 rounded-lg p-3 bg-bg-card/30">
+          <div className="grid grid-cols-2 gap-3 border-y border-border py-4">
             <div>
               <label className={labelClass}>Data Saída</label>
               <DateInput
@@ -270,7 +269,7 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
                 key={b.name}
                 type="button"
                 onClick={() => set('corretora', form.corretora === b.name ? '' : b.name)}
-                className={`flex-1 py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
+                className={`form-choice flex-1 py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
                   form.corretora === b.name
                     ? `${b.active} border`
                     : `bg-bg-primary border border-border text-text-secondary ${b.hover}`
@@ -299,14 +298,7 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
         )}
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-bg-hover transition-colors"
-          >
-            Cancelar
-          </button>
+        <div className="flex justify-end gap-3 border-t border-border pt-4">
           <button
             type="submit"
             disabled={saving}

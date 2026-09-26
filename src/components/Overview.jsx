@@ -1,3 +1,4 @@
+import useChartEntrance from '../hooks/useChartEntrance'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -28,6 +29,7 @@ const tooltipStyle = {
 }
 
 export default function Overview({ resultados, openPositions, prices }) {
+  const chartEntrance = useChartEntrance("overview")
   if (!resultados) return null
 
   const total = resultados.find(r => r.categoria === 'TOTAL')
@@ -109,16 +111,16 @@ export default function Overview({ resultados, openPositions, prices }) {
     }))
 
   return (
-    <div className="space-y-6">
+    <div className="overview-flat-page mobile-flat-page space-y-6">
       {/* Stat cards grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="mobile-stat-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {stats.map(s => (
           <StatCard key={s.label} {...s} />
         ))}
       </div>
 
       {/* Charts row 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="overview-charts grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Win Rate por categoria */}
         <div className="card">
           <h3 className="text-sm font-semibold text-text-secondary mb-4">Win Rate por Categoria</h3>
@@ -127,7 +129,7 @@ export default function Overview({ resultados, openPositions, prices }) {
               <XAxis type="number" domain={[0, 100]} tick={{ fill: '#848e9c', fontSize: 11 }} tickFormatter={v => `${v}%`} />
               <YAxis type="category" dataKey="name" tick={{ fill: '#eaecef', fontSize: 12 }} width={90} />
               <Tooltip {...tooltipStyle} formatter={v => `${v}%`} />
-              <Bar dataKey="winRate" radius={[0, 4, 4, 0]}>
+              <Bar {...chartEntrance("win-rate")} dataKey="winRate" radius={[0, 4, 4, 0]}>
                 {winRateData.map((entry, i) => (
                   <Cell key={i} fill={entry.fill} />
                 ))}
@@ -141,7 +143,7 @@ export default function Overview({ resultados, openPositions, prices }) {
           <h3 className="text-sm font-semibold text-text-secondary mb-4">Alocação de Capital</h3>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
-              <Pie
+              <Pie {...chartEntrance("allocation")}
                 data={allocationData}
                 cx="50%"
                 cy="50%"
@@ -172,7 +174,7 @@ export default function Overview({ resultados, openPositions, prices }) {
               <XAxis dataKey="name" tick={{ fill: '#848e9c', fontSize: 11 }} />
               <YAxis className="privacy-y-axis" tick={{ fill: '#848e9c', fontSize: 11 }} tickFormatter={v => `$${v}`} />
               <Tooltip {...tooltipStyle} formatter={v => <span className="v-usd">{fmtUSD(v)}</span>} />
-              <Bar dataKey="resultado" radius={[4, 4, 0, 0]}>
+              <Bar {...chartEntrance("category-result")} dataKey="resultado" radius={[4, 4, 0, 0]}>
                 {resultData.map((entry, i) => (
                   <Cell key={i} fill={entry.fill} />
                 ))}

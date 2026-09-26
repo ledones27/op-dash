@@ -44,10 +44,10 @@ export default function SellForm({ open, onClose, onSave, trade }) {
   const labelClass = 'block text-xs text-text-secondary font-medium mb-1.5'
 
   return (
-    <Modal open={open} onClose={onClose} title="Fechar Posição">
+    <Modal open={open} onClose={onClose} title="Fechar Posição" mobileFullScreen flat>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Info do trade */}
-        <div className="bg-bg-primary rounded-lg p-3 border border-border">
+        <div className="border-b border-border pb-4">
           <div className="flex items-center justify-between mb-1">
             <span className="font-mono font-bold">{trade.ativo}</span>
             <span className={trade.operacao === 'LONG' ? 'badge-long' : 'badge-short'}>
@@ -79,7 +79,6 @@ export default function SellForm({ open, onClose, onSave, trade }) {
             onChange={e => setPrecoSaida(e.target.value)}
             placeholder="Ex: 4500.00"
             className={inputClass}
-            autoFocus
           />
         </div>
 
@@ -87,14 +86,7 @@ export default function SellForm({ open, onClose, onSave, trade }) {
           <p className="text-accent-red text-sm bg-accent-red/10 px-3 py-2 rounded-lg">{error}</p>
         )}
 
-        <div className="flex justify-end gap-3 pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-bg-hover transition-colors"
-          >
-            Cancelar
-          </button>
+        <div className="flex justify-end gap-3 border-t border-border pt-4">
           <button
             type="submit"
             disabled={saving}

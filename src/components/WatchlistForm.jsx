@@ -66,7 +66,7 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
   const labelClass = 'block text-xs text-text-secondary font-medium mb-1.5'
 
   return (
-    <Modal open={open} onClose={onClose} title={isEditing ? 'Editar Item' : 'Adicionar à Watchlist'} wide>
+    <Modal open={open} onClose={onClose} title={isEditing ? 'Editar Item' : 'Adicionar à Watchlist'} wide mobileFullScreen flat>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className={labelClass}>Categoria</label>
@@ -76,7 +76,7 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
                 key={c}
                 type="button"
                 onClick={() => setCategoria(c)}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                className={`form-choice flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
                   categoria === c
                     ? 'bg-accent-gold/20 text-accent-gold border border-accent-gold/40'
                     : 'bg-bg-primary border border-border text-text-secondary hover:border-accent-gold/30'
@@ -90,19 +90,19 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
 
         <div>
           <label className={labelClass}>Ativo (ticker)</label>
-          <TickerSearch value={ativo} onChange={setAtivo} categoria={categoria} autoFocus />
+          <TickerSearch value={ativo} onChange={setAtivo} categoria={categoria} />
         </div>
 
         <div>
           <label className={labelClass}>Direção (opcional)</label>
           <div className="flex gap-2">
             <button type="button" onClick={() => setOperacao(operacao === 'LONG' ? '' : 'LONG')}
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              className={`form-choice flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
                 operacao === 'LONG' ? 'bg-accent-green/20 text-accent-green border border-accent-green/40' : 'bg-bg-primary border border-border text-text-secondary'}`}>
               LONG
             </button>
             <button type="button" onClick={() => setOperacao(operacao === 'SHORT' ? '' : 'SHORT')}
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              className={`form-choice flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
                 operacao === 'SHORT' ? 'bg-accent-red/20 text-accent-red border border-accent-red/40' : 'bg-bg-primary border border-border text-text-secondary'}`}>
               SHORT
             </button>
@@ -122,7 +122,7 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
                 key={b.name}
                 type="button"
                 onClick={() => setCorretora(corretora === b.name ? '' : b.name)}
-                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                className={`form-choice flex-1 py-2 rounded-lg text-xs font-semibold transition-colors ${
                   corretora === b.name
                     ? `${b.active} border`
                     : `bg-bg-primary border border-border text-text-secondary ${b.hover}`
@@ -164,8 +164,7 @@ export default function WatchlistForm({ open, onClose, onSave, editItem }) {
 
         {error && <p className="text-accent-red text-sm bg-accent-red/10 px-3 py-2 rounded-lg">{error}</p>}
 
-        <div className="flex justify-end gap-3 pt-2">
-          <button type="button" onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-text-secondary hover:bg-bg-hover transition-colors">Cancelar</button>
+        <div className="flex justify-end gap-3 border-t border-border pt-4">
           <button type="submit" disabled={saving} className="px-6 py-2.5 rounded-lg text-sm font-semibold bg-accent-gold text-bg-primary hover:bg-accent-gold/90 transition-colors disabled:opacity-50">
             {saving ? 'Salvando...' : isEditing ? 'Salvar' : 'Adicionar'}
           </button>

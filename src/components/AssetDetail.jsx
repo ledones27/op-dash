@@ -1,3 +1,4 @@
+import useChartEntrance from '../hooks/useChartEntrance'
 import { useState, useEffect, useMemo } from 'react'
 import {
   AreaChart, Area, BarChart, Bar, Cell, XAxis, YAxis, Tooltip,
@@ -18,6 +19,7 @@ const tooltipStyle = {
 }
 
 export default function AssetDetail({ ticker, trades, prices, onBack }) {
+  const chartEntrance = useChartEntrance(`asset:${ticker}`)
   // Filtrar trades deste ativo
   const assetTrades = useMemo(() =>
     trades
@@ -89,12 +91,13 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
   }, [closedTrades])
 
   return (
-    <div className="space-y-4">
+    <div className="asset-flat-page mobile-flat-page space-y-6 sm:space-y-4">
       {/* Header */}
       <div className="card">
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
+            aria-label="Voltar à aba anterior"
             className="p-2 rounded-lg hover:bg-bg-hover text-text-muted hover:text-text-primary transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -115,7 +118,7 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="mobile-stat-grid grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="card text-center">
           <DollarSign className="w-4 h-4 text-accent-gold mx-auto mb-1" />
           <p className={`stat-value text-lg v-usd ${stats.totalResult >= 0 ? 'positive' : 'negative'}`}>
@@ -163,7 +166,7 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
               <XAxis dataKey="label" tick={{ fill: '#848e9c', fontSize: 10 }} interval="preserveStartEnd" />
               <YAxis tick={{ fill: '#848e9c', fontSize: 11 }} tickFormatter={v => `$${v}`} />
               <Tooltip {...tooltipStyle} formatter={v => fmtUSD(v)} />
-              <Area type="monotone" dataKey="acumulado" stroke="#0ecb81" strokeWidth={2} fill="url(#gradAsset)" dot={false} />
+              <Area {...chartEntrance("total")} type="monotone" dataKey="acumulado" stroke="#0ecb81" strokeWidth={2} fill="url(#gradAsset)" dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -179,7 +182,7 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
               <XAxis dataKey="label" tick={{ fill: '#848e9c', fontSize: 9 }} interval="preserveStartEnd" />
               <YAxis tick={{ fill: '#848e9c', fontSize: 11 }} tickFormatter={v => `$${v}`} />
               <Tooltip {...tooltipStyle} formatter={v => fmtUSD(v)} />
-              <Bar dataKey="resultado" radius={[2, 2, 0, 0]}>
+              <Bar {...chartEntrance("trades")} dataKey="resultado" radius={[2, 2, 0, 0]}>
                 {equityData.map((e, i) => (
                   <Cell key={i} fill={e.resultado >= 0 ? '#0ecb81' : '#f6465d'} />
                 ))}
@@ -193,7 +196,7 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
       {openTrades.length > 0 && (
         <div className="card">
           <h3 className="text-sm font-semibold text-text-secondary mb-3">Posições Abertas</h3>
-          <div className="space-y-2">
+          <div>
             {openTrades.map((t, i) => {
               const pnl = calcUnrealizedPnl(t, currentPrice)
               const result = calcUnrealizedResult(t, currentPrice)
@@ -201,7 +204,7 @@ export default function AssetDetail({ ticker, trades, prices, onBack }) {
                 ? Math.floor((Date.now() - parseLocalDate(t.dataEntrada).getTime()) / 86400000)
                 : 0
               return (
-                <div key={t.id || i} className="rounded-lg px-4 py-3 bg-bg-primary border border-border">
+                <div key={t.id || i} className="border-b border-border/70 py-3 last:border-b-0 hover:bg-bg-hover/40 transition-colors sm:px-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className={t.operacao === 'LONG' ? 'badge-long' : 'badge-short'}>
