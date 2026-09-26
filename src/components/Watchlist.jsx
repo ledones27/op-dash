@@ -1,10 +1,10 @@
 import { ArrowUpRight, ArrowDownRight, Eye, Plus, Pencil, X } from 'lucide-react'
 
 const CATEGORY_LABELS = {
-  'Ações': { color: 'text-accent-blue', bg: 'bg-accent-blue/10' },
-  'Cripto': { color: 'text-accent-gold', bg: 'bg-accent-gold/10' },
-  'Commodities': { color: 'text-accent-green', bg: 'bg-accent-green/10' },
-  'Índices': { color: 'text-purple-400', bg: 'bg-purple-500/10' },
+  'Ações': { color: 'text-accent-blue', bg: 'sm:bg-accent-blue/10' },
+  'Cripto': { color: 'text-accent-gold', bg: 'sm:bg-accent-gold/10' },
+  'Commodities': { color: 'text-accent-green', bg: 'sm:bg-accent-green/10' },
+  'Índices': { color: 'text-purple-400', bg: 'sm:bg-purple-500/10' },
 }
 
 export default function Watchlist({ watchlist, onAdd, onEdit, onRemove }) {
@@ -13,9 +13,9 @@ export default function Watchlist({ watchlist, onAdd, onEdit, onRemove }) {
   const hasItems = Object.values(watchlist).some(list => list.length > 0)
 
   return (
-    <div className="space-y-4">
+    <div className="-mx-4 space-y-6 sm:mx-0 sm:space-y-4">
       {/* Header com botão de adicionar */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between border-b border-border px-4 pb-4 sm:border-0 sm:px-0 sm:pb-0">
         <h2 className="text-sm font-semibold text-text-secondary">Pré-Entradas por Categoria</h2>
         {onAdd && (
         <button
@@ -28,19 +28,19 @@ export default function Watchlist({ watchlist, onAdd, onEdit, onRemove }) {
       </div>
 
       {!hasItems ? (
-        <div className="card text-center py-12 text-text-muted">
+        <div className="card rounded-none border-0 border-b border-border bg-transparent text-center py-12 text-text-muted sm:rounded-xl sm:border sm:bg-bg-card">
           <Eye className="w-8 h-8 mx-auto mb-2 opacity-50" />
           <p>Watchlist vazia — nenhum ativo em pré-entrada.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           {Object.entries(watchlist).map(([cat, items]) => {
             const sortedItems = [...items].sort((a, b) => a.ativo.localeCompare(b.ativo))
-            const style = CATEGORY_LABELS[cat] || { color: 'text-text-primary', bg: 'bg-bg-hover' }
+            const style = CATEGORY_LABELS[cat] || { color: 'text-text-primary', bg: 'sm:bg-bg-hover' }
 
             return (
-              <div key={cat} className="card">
-                <div className="flex items-center justify-between mb-3">
+              <div key={cat} className="card rounded-none border-0 border-b border-border bg-transparent p-4 sm:rounded-xl sm:border sm:bg-bg-card sm:p-5">
+                <div className="flex items-center justify-between border-b border-border/70 pb-2 sm:mb-3 sm:border-0 sm:pb-0">
                   <h3 className={`text-sm font-semibold ${style.color}`}>
                     Pré {cat}
                   </h3>
@@ -51,11 +51,11 @@ export default function Watchlist({ watchlist, onAdd, onEdit, onRemove }) {
                 {items.length === 0 ? (
                   <p className="text-text-muted text-xs">Nenhum ativo</p>
                 ) : (
-                  <div className="space-y-1.5">
+                  <div className="sm:space-y-1.5">
                     {sortedItems.map((item, i) => (
                       <div
                         key={item.id || i}
-                        className={`flex items-center justify-between px-3 py-2 rounded-lg ${style.bg} group`}
+                        className={`group flex items-center justify-between border-b border-border/70 py-3 last:border-b-0 sm:rounded-lg sm:border-0 sm:px-3 sm:py-2 ${style.bg}`}
                       >
                         <div className="flex items-center gap-2">
                           <span className="font-mono font-semibold text-sm">{item.ativo}</span>
@@ -85,7 +85,7 @@ export default function Watchlist({ watchlist, onAdd, onEdit, onRemove }) {
                           )}
                         </div>
                         {item.id && (onEdit || onRemove) && (
-                          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all">
+                          <div className="flex items-center gap-0.5 opacity-100 transition-all sm:opacity-0 sm:group-hover:opacity-100">
                             {onEdit && (
                             <button
                               onClick={() => onEdit({ ...item, categoria: cat })}

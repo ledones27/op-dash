@@ -7,7 +7,7 @@ import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { buildEquityCurve, buildCapitalTimeline, fmtUSD, fmtDate, localDateString } from '../utils/calculations'
 import StatCard from './StatCard'
-import { DollarSign, TrendingUp, AlertTriangle } from 'lucide-react'
+import { DollarSign, TrendingUp, AlertTriangle, SlidersHorizontal, ChevronDown } from 'lucide-react'
 
 const CAT_COLORS = {
   acoes: '#1e80ff',
@@ -72,6 +72,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
   const [visibleCats, setVisibleCats] = useState(new Set())
   const [corretoraFilter, setCorretoraFilter] = useState(new Set())
   const [operandoOnly, setOperandoOnly] = useState(false)
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   const toggleCat = useCallback((key) => {
     setVisibleCats(prev => {
@@ -203,10 +204,29 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
     }`
 
   return (
-    <div className="space-y-4">
+    <div className="-mx-4 space-y-6 sm:mx-0 sm:space-y-4">
       {/* Period filter buttons */}
-      <div className="flex items-center justify-end gap-2 flex-wrap">
-        <div className="flex flex-wrap gap-1 mr-auto">
+      <div className="flex flex-wrap items-center justify-end gap-3 border-b border-border px-4 pb-4 sm:gap-2 sm:border-0 sm:px-0 sm:pb-0">
+        <div className="w-full sm:mr-auto sm:w-auto">
+          <button
+            type="button"
+            onClick={() => setFiltersOpen(v => !v)}
+            aria-expanded={filtersOpen}
+            aria-controls="equity-filters"
+            className="flex w-full items-center justify-between border-b border-border py-2 text-sm font-medium text-text-secondary sm:hidden"
+          >
+            <span className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4" />
+              Corretoras / Operando
+              {(corretoraFilter.size > 0 || operandoOnly) && (
+                <span className="rounded-full bg-accent-gold/15 px-1.5 py-0.5 text-xs text-accent-gold">
+                  {corretoraFilter.size + Number(operandoOnly)}
+                </span>
+              )}
+            </span>
+            <ChevronDown className={`h-4 w-4 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
+          </button>
+          <div id="equity-filters" className={`${filtersOpen ? 'grid' : 'hidden'} mt-3 w-full grid-cols-2 gap-2 sm:mt-0 sm:flex sm:w-auto sm:flex-wrap sm:gap-1`}>
           {[
             { name: 'Quantfury', active: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' },
             { name: 'Hyperliquid', active: 'bg-white/10 text-white border-white/30' },
@@ -221,10 +241,10 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
                 else next.add(b.name)
                 return next
               })}
-              className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors border ${
+              className={`w-full rounded-md border px-2.5 py-2 text-xs font-semibold transition-colors sm:w-auto sm:py-1.5 ${
                 corretoraFilter.has(b.name)
                   ? b.active
-                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover border-transparent'
+                  : 'border-border bg-bg-card text-text-secondary hover:bg-bg-hover hover:text-text-primary sm:border-transparent sm:bg-transparent'
               }`}
             >
               {b.name}
@@ -234,14 +254,15 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
             type="button"
             onClick={() => setOperandoOnly(v => !v)}
             aria-pressed={operandoOnly}
-            className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors border ${
+            className={`col-span-2 w-full rounded-md border px-2.5 py-2 text-xs font-semibold transition-colors sm:w-auto sm:py-1.5 ${
               operandoOnly
                 ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/40'
-                : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover border-transparent'
+                : 'border-border bg-bg-card text-text-secondary hover:bg-bg-hover hover:text-text-primary sm:border-transparent sm:bg-transparent'
             }`}
           >
             Operando
           </button>
+          </div>
         </div>
         {isCustomPeriod && customFrom && (
           <span className="text-xs text-text-muted">
@@ -249,12 +270,12 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
             {customTo && ` — ${fmtDate(customTo, { day: '2-digit', month: 'short', year: 'numeric' })}`}
           </span>
         )}
-        <div className="flex gap-1 bg-bg-card rounded-lg p-1 border border-border w-full sm:w-auto">
+        <div className="flex w-full gap-1 sm:w-auto sm:rounded-lg sm:border sm:border-border sm:bg-bg-card sm:p-1">
           {PERIOD_OPTIONS.map(opt => (
             <button
               key={opt.key}
               onClick={() => { setPeriod(opt.key); setCalendarOpen(false) }}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex-1 sm:flex-none ${
+              className={`flex-1 rounded-md px-1.5 py-1.5 text-xs font-medium transition-colors sm:flex-none sm:px-3 ${
                 period === opt.key && !isCustomPeriod
                   ? 'bg-accent-gold text-bg-primary'
                   : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
@@ -266,7 +287,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
           <div className="relative">
             <button
               onClick={() => { if (!calendarOpen) setPeriod('CUSTOM'); setCalendarOpen(v => !v) }}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              className={`rounded-md px-1.5 py-1.5 text-xs font-medium transition-colors sm:px-3 ${
                 isCustomPeriod
                   ? 'bg-accent-gold text-bg-primary'
                   : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
@@ -307,13 +328,13 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
       </div>
 
       {noData && (
-        <div className="card text-text-muted text-center py-12">Nenhum trade fechado para os filtros selecionados.</div>
+        <div className="card rounded-none border-0 border-b border-border bg-transparent py-12 text-center text-text-muted sm:rounded-xl sm:border sm:bg-bg-card">Nenhum trade fechado para os filtros selecionados.</div>
       )}
 
       {!noData && (
       <>
       {/* Equity Curve */}
-      <div className="card">
+      <div className="card rounded-none border-0 border-b border-border bg-transparent p-4 sm:rounded-xl sm:border sm:bg-bg-card sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <div className="flex items-center gap-3">
             <h3 className="text-sm font-semibold text-text-secondary">Resultado Acumulado</h3>
@@ -427,7 +448,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
       </div>
 
       {/* Individual trade results bar chart */}
-      <div className="card">
+      <div className="card rounded-none border-0 border-b border-border bg-transparent p-4 sm:rounded-xl sm:border sm:bg-bg-card sm:p-5">
         <h3 className="text-sm font-semibold text-text-secondary mb-4">Resultado por Trade (cronológico)</h3>
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={200}>
@@ -453,18 +474,20 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
       </div>
 
       {/* Capital Allocation Section */}
-      <div className="border-t border-border pt-4">
-        <h2 className="text-sm font-semibold text-text-secondary mb-4">Capital Alocado</h2>
+      <div className="sm:border-t sm:border-border sm:pt-4">
+        <h2 className="mb-4 border-b border-border px-4 pb-3 text-sm font-semibold text-text-secondary sm:border-0 sm:px-0 sm:pb-0">Capital Alocado</h2>
 
         {/* Capital Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+        <div className="mb-6 grid grid-cols-2 sm:mb-4 sm:grid-cols-4 sm:gap-3">
           <StatCard
+            className="rounded-none border-0 border-b border-border bg-transparent p-4 sm:rounded-xl sm:border sm:bg-bg-card sm:p-5"
             label="Capital em Aberto"
             value={fmtUSD(currentCapital)}
             icon={DollarSign}
             isUsd
           />
           <StatCard
+            className="rounded-none border-0 border-b border-border bg-transparent p-4 sm:rounded-xl sm:border sm:bg-bg-card sm:p-5"
             label="Pico Histórico"
             value={fmtUSD(capitalAll.peakCapital)}
             icon={TrendingUp}
@@ -472,11 +495,13 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
             isUsd
           />
           <StatCard
+            className="rounded-none border-0 border-b border-border bg-transparent p-4 sm:rounded-xl sm:border sm:bg-bg-card sm:p-5"
             label="Posições Abertas"
             value={filteredOpenPositions.length}
             icon={AlertTriangle}
           />
           <StatCard
+            className="rounded-none border-0 border-b border-border bg-transparent p-4 sm:rounded-xl sm:border sm:bg-bg-card sm:p-5"
             label="Aporte Médio"
             value={fmtUSD(filteredOpenPositions.length > 0 ? currentCapital / filteredOpenPositions.length : 0)}
             isUsd
@@ -484,7 +509,7 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
         </div>
 
         {/* Capital over time chart */}
-        <div className="card">
+        <div className="card rounded-none border-0 border-b border-border bg-transparent p-4 sm:rounded-xl sm:border sm:bg-bg-card sm:p-5">
           <h3 className="text-sm font-semibold text-text-secondary mb-4">Capital Alocado ao Longo do Tempo</h3>
           {capitalChartData.length > 0 ? (
             <>

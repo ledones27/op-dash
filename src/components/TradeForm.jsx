@@ -103,7 +103,7 @@ export default function TradeForm({ open, onClose, onSave, editTrade }) {
   const labelClass = 'block text-xs text-text-secondary font-medium mb-1.5'
 
   return (
-    <Modal open={open} onClose={onClose} title={isEdit ? 'Editar Entrada' : 'Novo Trade'} wide>
+    <Modal open={open} onClose={onClose} title={isEdit ? 'Editar Entrada' : 'Novo Trade'} wide mobileFullScreen={!isEdit}>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Row 1: Categoria */}
         <div>

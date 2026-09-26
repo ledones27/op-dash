@@ -4,10 +4,10 @@ import { calcUnrealizedPnl, calcUnrealizedResult, fmtUSD, fmtPct, fmtPrice, pars
 import AssetLogo from './AssetLogo'
 
 const CATEGORIES = [
-  { key: 'Ações', color: 'text-accent-blue', border: 'border-accent-blue/30', bg: 'bg-accent-blue/5' },
-  { key: 'Cripto', color: 'text-accent-gold', border: 'border-accent-gold/30', bg: 'bg-accent-gold/5' },
-  { key: 'Commodities', color: 'text-accent-green', border: 'border-accent-green/30', bg: 'bg-accent-green/5' },
-  { key: 'Índices', color: 'text-purple-400', border: 'border-purple-500/30', bg: 'bg-purple-500/5' },
+  { key: 'Ações', color: 'text-accent-blue', border: 'sm:border-accent-blue/30', bg: 'sm:bg-accent-blue/5' },
+  { key: 'Cripto', color: 'text-accent-gold', border: 'sm:border-accent-gold/30', bg: 'sm:bg-accent-gold/5' },
+  { key: 'Commodities', color: 'text-accent-green', border: 'sm:border-accent-green/30', bg: 'sm:bg-accent-green/5' },
+  { key: 'Índices', color: 'text-purple-400', border: 'sm:border-purple-500/30', bg: 'sm:bg-purple-500/5' },
 ]
 
 const CAT_COLORS = {
@@ -362,27 +362,27 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
   }
 
   return (
-    <div className="space-y-4">
+    <div className="-mx-4 space-y-6 sm:mx-0 sm:space-y-4">
       {/* Summary bar */}
-      <div className="card flex flex-wrap items-center gap-6">
-        <div>
-          <span className="stat-label">Posições Abertas</span>
-          <p className="stat-value">{positions.length}</p>
+      <div className="card grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-3 rounded-none border-0 border-b border-border bg-transparent p-4 sm:flex sm:flex-wrap sm:items-center sm:gap-6 sm:rounded-xl sm:border sm:bg-bg-card sm:p-5">
+        <div className="order-1 flex items-center gap-1 sm:block">
+          <span className="stat-label mt-0 w-[76px] leading-tight sm:mt-1 sm:w-auto sm:leading-normal">Posições Abertas</span>
+          <p className="stat-value text-xl sm:text-2xl">{positions.length}</p>
         </div>
-        <div>
+        <div className="order-3 col-span-2 border-t border-border pt-3 sm:order-2 sm:col-auto sm:border-0 sm:pt-0">
           <span className="stat-label">Capital Alocado (Aberto)</span>
-          <p className="stat-value v-usd">{fmtUSD(totalAporte)}</p>
+          <p className="stat-value v-usd text-xl sm:text-2xl">{fmtUSD(totalAporte)}</p>
         </div>
-        <div>
+        <div className="order-4 sm:order-3">
           <span className="stat-label">PnL Não-Realizado</span>
-          <p className={`stat-value v-usd ${totalUnrealized >= 0 ? 'positive' : 'negative'}`}>
+          <p className={`stat-value v-usd text-xl sm:text-2xl ${totalUnrealized >= 0 ? 'positive' : 'negative'}`}>
             {positionsWithPrice > 0 ? fmtUSD(totalUnrealized) : '—'}
           </p>
         </div>
         {positionsWithPrice > 0 && totalAporte > 0 && (
-          <div>
+          <div className="order-5 sm:order-4">
             <span className="stat-label">ROI Não-Realizado</span>
-            <p className={`stat-value ${totalUnrealized >= 0 ? 'positive' : 'negative'}`}>
+            <p className={`stat-value text-xl sm:text-2xl ${totalUnrealized >= 0 ? 'positive' : 'negative'}`}>
               {fmtPct(totalUnrealized / totalAporte)}
             </p>
           </div>
@@ -390,7 +390,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
         <button
           onClick={handleExportImage}
           disabled={exporting}
-          className="ml-auto flex items-center gap-1.5 px-3 py-2 rounded-lg bg-accent-blue/15 text-accent-blue text-sm font-semibold hover:bg-accent-blue/25 transition-colors disabled:opacity-50"
+          className="order-2 justify-self-end flex items-center gap-1.5 px-3 py-2 rounded-lg bg-accent-blue/15 text-accent-blue text-sm font-semibold hover:bg-accent-blue/25 transition-colors disabled:opacity-50 sm:order-5 sm:ml-auto"
           title="Exportar como imagem 1920×1080"
         >
           {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
@@ -399,15 +399,15 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
       </div>
 
       {/* Colunas por categoria */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         {CATEGORIES.map(cat => {
           const catPositions = grouped[cat.key] || []
           const catAporte = catPositions.reduce((s, p) => s + (p.aporte || 0), 0)
 
           return (
-            <div key={cat.key} className={`card border ${cat.border}`}>
+            <div key={cat.key} className={`card rounded-none border-0 border-b border-border bg-transparent p-4 sm:rounded-xl sm:border sm:bg-bg-card sm:p-5 ${cat.border}`}>
               {/* Category header */}
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between border-b border-border/70 pb-2 sm:mb-3 sm:border-0 sm:pb-0">
                 <h3 className={`text-sm font-semibold ${cat.color}`}>{cat.key}</h3>
                 <span className="text-xs text-text-muted">{catPositions.length} pos.</span>
               </div>
@@ -415,7 +415,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
               {catPositions.length === 0 ? (
                 <p className="text-text-muted text-xs text-center py-4">Nenhuma posição</p>
               ) : (
-                <div className="space-y-2">
+                <div className="sm:space-y-2">
                   {[...catPositions]
                     .sort((a, b) => a.ativo.localeCompare(b.ativo))
                     .map((p, i) => {
@@ -429,7 +429,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                       return (
                         <div
                           key={p.id || i}
-                          className={`rounded-lg px-3 py-2.5 ${cat.bg} group hover:bg-bg-hover/40 transition-colors`}
+                          className={`group border-b border-border/70 py-3 last:border-b-0 hover:bg-bg-hover/40 transition-colors sm:rounded-lg sm:border-0 sm:px-3 sm:py-2.5 ${cat.bg}`}
                         >
                           {/* Linha 1: Ativo + Operação + Ações */}
                           <div className="flex items-center justify-between mb-1.5">
@@ -469,7 +469,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                               )}
                             </div>
                             {(onSell || onEdit || onDelete) && (
-                            <div data-no-export className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div data-no-export className="flex gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
                               {onSell && (
                               <button
                                 onClick={() => onSell(p)}
@@ -531,7 +531,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
                     })}
 
                   {/* Subtotal da categoria */}
-                  <div className="border-t border-border/50 pt-2 mt-2 v-usd">
+                  <div className="pt-2 v-usd sm:mt-2 sm:border-t sm:border-border/50">
                     <div className="flex justify-between text-xs text-text-muted">
                       <span>Capital:</span>
                       <span className="font-mono font-medium">{fmtUSD(catAporte)}</span>

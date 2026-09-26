@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { ArrowUpRight, ArrowDownRight, Filter, Plus, Download, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, Calendar } from 'lucide-react'
+import { ArrowUpRight, ArrowDownRight, Filter, Plus, Download, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, Calendar, SlidersHorizontal } from 'lucide-react'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { fmtUSD, fmtPct, fmtPrice, fmtDate } from '../utils/calculations'
@@ -51,6 +51,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
   const periodRef = useRef(null)
   const [corretoraFilter, setCorretoraFilter] = useState(new Set())
   const [operandoOnly, setOperandoOnly] = useState(false)
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [sortKey, setSortKey] = useState('dataEntrada')
   const [sortDir, setSortDir] = useState('desc')
   const [page, setPage] = useState(1)
@@ -139,17 +140,20 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
   }
 
   return (
-    <div className="space-y-4">
+    <div className="-mx-4 space-y-6 sm:mx-0 sm:space-y-4">
       {/* Filters */}
-      <div className="card space-y-3">
-        <div className="flex flex-wrap items-center gap-2 border-b border-border/50 pb-3">
-          <h2 className="text-sm font-semibold text-text-primary">Histórico</h2>
-          <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-            <span className="text-text-muted text-xs mr-1">{filtered.length} {filtered.length === 1 ? 'trade' : 'trades'}</span>
+      <div className="card space-y-6 rounded-none border-x-0 border-t-0 bg-transparent px-4 sm:space-y-3 sm:rounded-xl sm:border sm:bg-bg-card">
+        <div className="flex flex-col gap-3 border-b border-border/50 pb-3 sm:flex-row sm:items-center">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold text-text-primary">Histórico</h2>
+            <span className="text-text-muted text-xs sm:hidden">{filtered.length} {filtered.length === 1 ? 'trade' : 'trades'}</span>
+          </div>
+          <div className="flex items-center gap-2 sm:ml-auto">
+            <span className="hidden text-text-muted text-xs mr-1 sm:inline">{filtered.length} {filtered.length === 1 ? 'trade' : 'trades'}</span>
             {onExport && (
               <button
                 onClick={() => onExport(filtered, { catFilter, statusFilter, dateFrom, dateTo, exitMonth })}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent-green/15 text-accent-green hover:bg-accent-green/25 transition-colors"
+                className="flex flex-1 items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold bg-accent-green/15 text-accent-green hover:bg-accent-green/25 transition-colors sm:flex-none sm:py-1.5"
                 title="Exportar trades filtrados para Excel"
               >
                 <Download className="w-3 h-3" /> Exportar
@@ -158,7 +162,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
             {onNew && (
               <button
                 onClick={onNew}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent-gold/15 text-accent-gold hover:bg-accent-gold/25 transition-colors"
+                className="flex flex-1 items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold bg-accent-gold/15 text-accent-gold hover:bg-accent-gold/25 transition-colors sm:flex-none sm:py-1.5"
               >
                 <Plus className="w-3 h-3" /> Novo
               </button>
@@ -166,47 +170,73 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
           </div>
         </div>
         {/* Categoria e status */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <div className="flex flex-wrap items-center gap-1">
-            <Filter className="w-4 h-4 text-text-muted mr-1 shrink-0" />
-            <span className="text-[11px] text-text-muted mr-1">Categoria</span>
-            {CATEGORIES.map(c => (
-              <button
-                key={c}
-                onClick={() => { setCatFilter(c); setPage(1) }}
-                aria-pressed={catFilter === c}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  catFilter === c
-                    ? 'bg-accent-gold/15 text-accent-gold'
-                    : 'text-text-secondary hover:bg-bg-hover'
-                }`}
-              >
-                {c}
-              </button>
-            ))}
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-2">
+          <div className="flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-1">
+            <div className="flex items-center gap-1 sm:contents">
+              <Filter className="w-4 h-4 text-text-muted mr-1 shrink-0" />
+              <span className="text-[11px] text-text-muted mr-1">Categoria</span>
+            </div>
+            <div className="grid grid-cols-5 gap-1 sm:flex sm:flex-wrap">
+              {CATEGORIES.map(c => (
+                <button
+                  key={c}
+                  onClick={() => { setCatFilter(c); setPage(1) }}
+                  aria-label={c}
+                  aria-pressed={catFilter === c}
+                  className={`min-w-0 px-0.5 py-2 rounded-lg text-[10px] font-medium whitespace-nowrap transition-colors sm:px-3 sm:py-1.5 sm:text-xs ${
+                    catFilter === c
+                      ? 'bg-accent-gold/15 text-accent-gold'
+                      : 'text-text-secondary hover:bg-bg-hover'
+                  }`}
+                >
+                  {c === 'Commodities' ? <><span className="sm:hidden">Commod.</span><span className="hidden sm:inline">Commodities</span></> : c}
+                </button>
+              ))}
+            </div>
           </div>
           <span className="text-border hidden lg:inline">|</span>
-          <div className="flex flex-wrap items-center gap-1">
+          <div className="flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-1">
             <span className="text-[11px] text-text-muted mr-1">Status</span>
-            {STATUSES.map(s => (
-              <button
-                key={s}
-                onClick={() => { setStatusFilter(s); setPage(1) }}
-                aria-pressed={statusFilter === s}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  statusFilter === s
-                    ? 'bg-accent-blue/15 text-accent-blue'
-                    : 'text-text-secondary hover:bg-bg-hover'
-                }`}
-              >
-                {s === 'Todos' ? 'Todos' : s === 'Fechada' ? 'Fechados' : 'Abertos'}
-              </button>
-            ))}
+            <div className="grid grid-cols-3 gap-1 sm:flex">
+              {STATUSES.map(s => (
+                <button
+                  key={s}
+                  onClick={() => { setStatusFilter(s); setPage(1) }}
+                  aria-pressed={statusFilter === s}
+                  className={`px-2 py-2 rounded-lg text-xs font-medium transition-colors sm:px-3 sm:py-1.5 ${
+                    statusFilter === s
+                      ? 'bg-accent-blue/15 text-accent-blue'
+                      : 'text-text-secondary hover:bg-bg-hover'
+                  }`}
+                >
+                  {s === 'Todos' ? 'Todos' : s === 'Fechada' ? 'Fechados' : 'Abertos'}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         {/* Corretoras, Operando e período */}
-        <div className="flex flex-wrap items-center gap-1 border-t border-border/50 pt-3">
-          <span className="text-[11px] text-text-muted mr-1">Corretora</span>
+        <div className="border-t border-border/50 pt-4 sm:flex sm:flex-wrap sm:items-center sm:pt-3">
+          <button
+            type="button"
+            onClick={() => setFiltersOpen(v => !v)}
+            aria-expanded={filtersOpen}
+            aria-controls="history-broker-filters"
+            className="flex w-full items-center justify-between py-2 text-sm font-medium text-text-secondary sm:hidden"
+          >
+            <span className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4" />
+              Corretoras / Operando
+              {(corretoraFilter.size > 0 || operandoOnly) && (
+                <span className="rounded-full bg-accent-gold/15 px-1.5 py-0.5 text-xs text-accent-gold">
+                  {corretoraFilter.size + Number(operandoOnly)}
+                </span>
+              )}
+            </span>
+            <ChevronDown className={`h-4 w-4 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
+          </button>
+          <div id="history-broker-filters" className={`${filtersOpen ? 'grid' : 'hidden'} mt-2 grid-cols-2 gap-2 sm:mt-0 sm:flex sm:flex-wrap sm:items-center sm:gap-1`}>
+          <span className="hidden text-[11px] text-text-muted sm:mr-1 sm:inline">Corretora</span>
           {[
             { name: 'Quantfury', active: 'bg-emerald-500/15 text-emerald-400' },
             { name: 'Hyperliquid', active: 'bg-white/10 text-white' },
@@ -217,10 +247,10 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
               key={b.name}
               onClick={() => { setCorretoraFilter(prev => { const next = new Set(prev); if (next.has(b.name)) next.delete(b.name); else next.add(b.name); return next }); setPage(1) }}
               aria-pressed={corretoraFilter.has(b.name)}
-              className={`px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`border px-2 sm:px-2.5 py-2 rounded-lg text-xs font-medium transition-colors sm:py-1.5 ${
                 corretoraFilter.has(b.name)
-                  ? b.active
-                  : 'text-text-secondary hover:bg-bg-hover'
+                  ? `${b.active} border-transparent`
+                  : 'bg-bg-primary/70 border-border/50 text-text-secondary hover:bg-bg-hover sm:bg-transparent sm:border-transparent'
               }`}
             >
               {b.name}
@@ -230,34 +260,37 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
             type="button"
             onClick={() => { setOperandoOnly(v => !v); setPage(1) }}
             aria-pressed={operandoOnly}
-            className={`px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`col-span-2 border px-2 sm:px-2.5 py-2 rounded-lg text-xs font-medium transition-colors sm:py-1.5 ${
               operandoOnly
-                ? 'bg-accent-gold/15 text-accent-gold'
-                : 'text-text-secondary hover:bg-bg-hover'
+                ? 'bg-accent-gold/15 text-accent-gold border-transparent'
+                : 'bg-bg-primary/70 border-border/50 text-text-secondary hover:bg-bg-hover sm:bg-transparent sm:border-transparent'
             }`}
           >
             Operando
           </button>
-          <div className="relative ml-auto" ref={periodRef}>
+          </div>
+          <div className="relative mt-3 border-t border-border/50 pt-3 sm:ml-auto sm:mt-0 sm:border-0 sm:pt-0" ref={periodRef}>
             <button
               type="button"
               onClick={() => { setPeriodOpen(v => !v); setMonthPickerOpen(false) }}
               aria-expanded={periodOpen}
               aria-controls="history-period-panel"
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+              className={`flex w-full items-center justify-between gap-1.5 py-2 text-xs font-medium transition-colors sm:w-auto sm:justify-center sm:rounded-lg sm:border sm:px-3 sm:py-1.5 ${
                 hasPeriodFilter
-                  ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/40'
-                  : 'bg-bg-primary text-text-secondary border-border hover:bg-bg-hover'
+                  ? 'text-accent-gold sm:border-accent-gold/40 sm:bg-accent-gold/15'
+                  : 'text-text-secondary hover:text-text-primary sm:border-border sm:bg-bg-primary sm:hover:bg-bg-hover'
               }`}
             >
-              <Calendar className="w-3 h-3" />
-              {periodLabel}
+              <span className="flex items-center gap-1.5">
+                <Calendar className="w-3 h-3" />
+                {periodLabel}
+              </span>
               <ChevronDown className={`w-3 h-3 transition-transform ${periodOpen ? 'rotate-180' : ''}`} />
             </button>
             {periodOpen && (
               <div
                 id="history-period-panel"
-                className="absolute right-0 top-full mt-2 z-50 bg-bg-card border border-border rounded-xl shadow-xl p-4"
+                className="absolute bottom-full right-0 z-50 mb-2 rounded-xl border border-border bg-bg-card p-4 shadow-xl sm:bottom-auto sm:top-full sm:mb-0 sm:mt-2"
                 style={{ width: 'min(380px, calc(100vw - 48px))' }}
               >
                 <div className="text-xs font-semibold text-text-primary mb-2">Data de entrada</div>
@@ -318,7 +351,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
       </div>
 
       {/* Table */}
-      <div className="card overflow-x-auto">
+      <div className="card overflow-x-auto rounded-none border-x-0 border-t-0 bg-transparent p-0 sm:rounded-xl sm:border sm:bg-bg-card sm:p-5">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-text-muted text-xs uppercase border-b border-border">
@@ -423,7 +456,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                   </td>
                   {(onEdit || onDelete) && (
                   <td className="py-2.5 px-2 text-center">
-                    <div className="flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex justify-center gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
                       {onEdit && (
                       <button
                         onClick={() => onEdit(t)}
