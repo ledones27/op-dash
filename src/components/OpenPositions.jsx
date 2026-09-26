@@ -20,10 +20,16 @@ const CAT_COLORS = {
 // ─── Export offscreen 1920×1080 ─────────────────────────
 
 function buildExportDOM(positions, prices) {
-  const W = 1920, H = 1080
-  const PAD = 36
+  const W = 1920
+  const PAD_X = 42
+  const PAD_TOP = 34
+  const PAD_BOTTOM = 28
   const GAP = 10
-  const HEADER_AREA = 64 // header height + margin
+  const HEADER_HEIGHT = 106
+  const FOOTER_HEIGHT = 25
+  const H = Math.max(1080, PAD_TOP + PAD_BOTTOM + HEADER_HEIGHT + 16 + FOOTER_HEIGHT + Math.ceil(positions.length / 7) * 122)
+  const contentW = W - PAD_X * 2
+  const contentH = H - PAD_TOP - PAD_BOTTOM - HEADER_HEIGHT - 16 - FOOTER_HEIGHT
 
   const now = new Date()
   const dateStr = now.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
@@ -38,106 +44,111 @@ function buildExportDOM(positions, prices) {
   })
 
   const n = sorted.length
-  // Calcular grid ideal para preencher 1920x1080
-  const contentW = W - PAD * 2
-  const contentH = H - PAD * 2 - HEADER_AREA
-  const ratio = contentW / contentH
-
-  // Encontrar cols/rows que melhor preenche o espaço
-  let bestCols = 1, bestRows = n
+  // Equilibra legibilidade, proporção do card e espaços vazios para cada quantidade.
+  let bestCols = 1, bestRows = Math.max(1, n)
   let bestWaste = Infinity
-  for (let c = 1; c <= Math.min(n, 10); c++) {
+  for (let c = 1; c <= Math.min(n, 7); c++) {
     const r = Math.ceil(n / c)
     const cellW = (contentW - (c - 1) * GAP) / c
     const cellH = (contentH - (r - 1) * GAP) / r
-    // Queremos cells com aspect ratio ~2.5:1 (wide cards)
-    const cellRatio = cellW / cellH
-    const waste = Math.abs(cellRatio - 2.8) + (c * r - n) * 0.1
-    if (cellH >= 40 && waste < bestWaste) {
+    const emptySlots = c * r - n
+    const waste = Math.abs(cellW / cellH - 3.5) + emptySlots * 0.35
+    if (cellW >= 245 && cellH >= 112 && waste < bestWaste) {
       bestWaste = waste
       bestCols = c
       bestRows = r
     }
   }
-
   const cellW = Math.floor((contentW - (bestCols - 1) * GAP) / bestCols)
   const cellH = Math.floor((contentH - (bestRows - 1) * GAP) / bestRows)
+  const compact = cellH < 135
+  const dense = cellW < 340
+  const spacious = cellH > 180
 
   const root = document.createElement('div')
   Object.assign(root.style, {
     position: 'fixed', left: '-9999px', top: '0',
     width: `${W}px`, height: `${H}px`,
-    background: '#0a0e17', fontFamily: "'Inter', system-ui, sans-serif",
+    background: '#080d17', fontFamily: "'Inter', 'Segoe UI', Arial, sans-serif",
     color: '#eaecef', display: 'flex', flexDirection: 'column',
-    padding: `${PAD}px`, boxSizing: 'border-box',
+    padding: `${PAD_TOP}px ${PAD_X}px ${PAD_BOTTOM}px`, boxSizing: 'border-box',
   })
 
   // ─── Header ───
   const header = document.createElement('div')
   Object.assign(header.style, {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    marginBottom: '16px', flexShrink: '0',
+    height: `${HEADER_HEIGHT}px`, marginBottom: '16px', flexShrink: '0',
+    borderBottom: '1px solid #263247',
   })
 
   const hLeft = document.createElement('div')
   hLeft.style.display = 'flex'
   hLeft.style.alignItems = 'center'
-  hLeft.style.gap = '12px'
+  hLeft.style.gap = '19px'
 
-  const badge = document.createElement('div')
-  Object.assign(badge.style, {
-    width: '42px', height: '42px', borderRadius: '8px',
-    background: 'rgba(240,185,11,0.15)', display: 'flex',
-    alignItems: 'center', justifyContent: 'center',
-    color: '#f0b90b', fontWeight: '800', fontSize: '18px',
-  })
-  badge.textContent = 'OP'
+  const logo = document.createElement('img')
+  logo.src = '/logo1.webp'
+  logo.alt = 'OP'
+  Object.assign(logo.style, { position: 'relative', top: '7px', width: 'auto', height: '76px', objectFit: 'contain' })
 
   const titleBlock = document.createElement('div')
+  const eyebrow = document.createElement('div')
+  Object.assign(eyebrow.style, {
+    color: '#eebd19', fontSize: '13px', fontWeight: '800',
+    letterSpacing: '0.17em', textTransform: 'uppercase', marginBottom: '5px',
+  })
+  eyebrow.textContent = 'Visão da carteira'
   const t1 = document.createElement('div')
-  Object.assign(t1.style, { fontSize: '24px', fontWeight: '700' })
-  t1.textContent = 'Posições Abertas'
+  Object.assign(t1.style, { fontSize: '31px', fontWeight: '700', lineHeight: '1.06', letterSpacing: '-0.045em' })
+  t1.textContent = 'Posições abertas'
   const t2 = document.createElement('div')
-  Object.assign(t2.style, { fontSize: '14px', color: '#848e9c', marginTop: '2px' })
-  t2.textContent = `${n} posições · ${dateStr} às ${timeStr}`
-  titleBlock.append(t1, t2)
-  hLeft.append(badge, titleBlock)
+  Object.assign(t2.style, { fontSize: '15px', color: '#92a0b5', marginTop: '7px' })
+  t2.textContent = `Retrato das posições · exportado em ${dateStr} às ${timeStr}`
+  titleBlock.append(eyebrow, t1, t2)
+  hLeft.append(logo, titleBlock)
 
-  // Legenda de categorias
-  const legend = document.createElement('div')
-  legend.style.display = 'flex'
-  legend.style.gap = '20px'
-  legend.style.alignItems = 'center'
-  for (const cat of CATEGORIES) {
-    const count = sorted.filter(p => p.categoria === cat.key).length
-    if (count === 0) continue
-    const item = document.createElement('div')
-    item.style.display = 'flex'
-    item.style.alignItems = 'center'
-    item.style.gap = '6px'
-    const dot = document.createElement('div')
-    Object.assign(dot.style, {
-      width: '10px', height: '10px', borderRadius: '3px',
-      background: CAT_COLORS[cat.key].text,
+  const summary = document.createElement('div')
+  Object.assign(summary.style, { display: 'flex', alignItems: 'center', gap: '10px' })
+  const summaryItems = [
+    { count: n, label: n === 1 ? 'posição' : 'posições', color: '#f6c526', bg: '#1b1a17', border: '#745c18' },
+    ...CATEGORIES.map(cat => ({
+      count: sorted.filter(p => p.categoria === cat.key).length,
+      label: cat.key,
+      color: CAT_COLORS[cat.key].text,
+      bg: '#101928', border: '#29364a',
+    })).filter(item => item.count > 0),
+  ]
+  for (const item of summaryItems) {
+    const chip = document.createElement('div')
+    Object.assign(chip.style, {
+      minWidth: '128px', height: '57px', border: `1px solid ${item.border}`,
+      borderTop: `2px solid ${item.color}`, borderRadius: '11px',
+      background: item.bg, display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+      padding: '0 8px', boxSizing: 'border-box',
     })
+    const number = document.createElement('b')
+    Object.assign(number.style, { position: 'relative', top: '-11px', color: item.color === '#f6c526' ? item.color : '#f5f7fb', fontFamily: 'monospace', fontSize: '22px', lineHeight: '1' })
+    number.textContent = item.count
     const label = document.createElement('span')
-    Object.assign(label.style, { fontSize: '15px', color: '#848e9c' })
-    label.textContent = `${cat.key} (${count})`
-    item.append(dot, label)
-    legend.appendChild(item)
+    Object.assign(label.style, { position: 'relative', top: '-11px', color: '#8998ac', fontSize: '12px', marginTop: '5px', textTransform: 'uppercase', letterSpacing: '0.07em' })
+    label.textContent = item.label
+    chip.append(number, label)
+    summary.appendChild(chip)
   }
 
-  header.append(hLeft, legend)
+  header.append(hLeft, summary)
   root.appendChild(header)
 
   // ─── Grid de cards ───
   const grid = document.createElement('div')
   Object.assign(grid.style, {
     display: 'grid',
-    gridTemplateColumns: `repeat(${bestCols}, 1fr)`,
-    gridTemplateRows: `repeat(${bestRows}, 1fr)`,
+    gridTemplateColumns: `repeat(${bestCols}, minmax(0, ${n <= 8 ? Math.min(cellW, 850) + 'px' : '1fr'}))`,
+    gridTemplateRows: `repeat(${bestRows}, minmax(0, ${n <= 8 ? Math.min(cellH, 220) + 'px' : '1fr'}))`,
     gap: `${GAP}px`,
-    flex: '1', minHeight: '0',
+    flex: '1', minHeight: '0', justifyContent: 'center', alignContent: 'center',
   })
 
   for (const p of sorted) {
@@ -145,76 +156,147 @@ function buildExportDOM(positions, prices) {
     const currentPrice = prices[p.ativo]
     const pnl = calcUnrealizedPnl(p, currentPrice)
     const days = p.dataEntrada
-      ? Math.floor((Date.now() - parseLocalDate(p.dataEntrada).getTime()) / 86400000)
+      ? Math.round((parseLocalDate(localDateString()).getTime() - parseLocalDate(p.dataEntrada).getTime()) / 86400000)
       : p.duracao
-    const pnlColor = pnl == null ? '#848e9c' : pnl >= 0 ? '#0ecb81' : '#f6465d'
+    const pnlColor = pnl == null ? '#a4b0c2' : pnl >= 0 ? '#17d6aa' : '#ff5872'
     const isLong = p.operacao === 'LONG'
-    const entryStr = fmtPrice(p.precoEntrada)
-    const currentStr = currentPrice ? fmtPrice(currentPrice) : '...'
 
     const card = document.createElement('div')
     Object.assign(card.style, {
-      background: '#111827', borderRadius: '8px',
-      borderLeft: `4px solid ${colors.text}`,
-      padding: '10px 16px',
-      display: 'flex', flexDirection: 'column', justifyContent: 'center',
+      position: 'relative', background: '#111b2b', borderRadius: '12px',
+      border: '1px solid #263247', borderLeft: `3px solid ${colors.text}`,
+      padding: spacious ? '20px 22px' : dense ? '10px 12px' : '14px 17px 13px',
+      display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+      boxSizing: 'border-box', overflow: 'hidden', minWidth: '0',
     })
 
-    // Row 1: TICKER [badge] ............ days
+    // Topo: ticker, operação, categoria e duração
     const row1 = document.createElement('div')
     Object.assign(row1.style, {
+      position: 'relative', top: '-11px',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      marginBottom: '4px',
+      gap: '8px', minWidth: '0',
     })
     const r1Left = document.createElement('div')
     r1Left.style.display = 'flex'
     r1Left.style.alignItems = 'center'
-    r1Left.style.gap = '8px'
+    r1Left.style.gap = dense ? '6px' : '10px'
+    r1Left.style.minWidth = '0'
 
     const ticker = document.createElement('span')
-    Object.assign(ticker.style, { fontFamily: 'monospace', fontWeight: '700', fontSize: '22px' })
+    Object.assign(ticker.style, {
+      fontFamily: 'monospace', fontWeight: '700',
+      fontSize: spacious ? '27px' : dense ? '17px' : '21px', whiteSpace: 'nowrap',
+    })
     ticker.textContent = p.ativo
 
     const opBadge = document.createElement('span')
     Object.assign(opBadge.style, {
-      fontSize: '15px', fontWeight: '600', padding: '3px 10px',
-      borderRadius: '4px', lineHeight: '1.4',
-      background: isLong ? 'rgba(14,203,129,0.15)' : 'rgba(246,70,93,0.15)',
-      color: isLong ? '#0ecb81' : '#f6465d',
+      position: 'relative', top: '11px',
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      gap: '4px', flexShrink: '0', boxSizing: 'border-box',
+      height: spacious ? '29px' : dense ? '22px' : '25px',
+      fontSize: spacious ? '14px' : dense ? '10px' : '11px',
+      fontWeight: '700', padding: dense ? '0 6px' : '0 8px',
+      borderRadius: '5px', lineHeight: '1', whiteSpace: 'nowrap',
+      background: isLong ? '#103d3a' : '#472235',
+      color: isLong ? '#28daae' : '#ff6679',
     })
-    opBadge.textContent = isLong ? '↑ L' : '↓ S'
+    const opArrow = document.createElement('span')
+    opArrow.style.position = 'relative'
+    opArrow.style.top = '-7px'
+    opArrow.textContent = isLong ? '↑' : '↓'
+    const opLabel = document.createElement('span')
+    opLabel.style.position = 'relative'
+    opLabel.style.top = '-7px'
+    opLabel.textContent = isLong ? 'LONG' : 'SHORT'
+    opBadge.append(opArrow, opLabel)
 
     r1Left.append(ticker, opBadge)
 
-    const daysSpan = document.createElement('span')
-    Object.assign(daysSpan.style, { fontFamily: 'monospace', fontSize: '18px', color: '#848e9c' })
-    daysSpan.textContent = `${days}d`
+    const meta = document.createElement('span')
+    Object.assign(meta.style, {
+      position: 'relative', top: '5px',
+      color: '#8190a5', fontSize: spacious ? '15px' : '12px',
+      whiteSpace: 'nowrap', flexShrink: '0',
+    })
+    const categoryDot = document.createElement('span')
+    Object.assign(categoryDot.style, {
+      position: 'relative', top: '6px',
+      display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%',
+      background: colors.text, marginRight: '5px', verticalAlign: '1px',
+    })
+    meta.appendChild(categoryDot)
+    const duration = days === 0 ? 'Hoje' : days == null ? '—' : `${days}d`
+    meta.appendChild(document.createTextNode(dense ? duration : `${p.categoria} · ${duration}`))
+    row1.append(r1Left, meta)
 
-    row1.append(r1Left, daysSpan)
-
-    // Row 2: entry → current ............ PnL%
+    // Rodapé: preços de entrada e atual, mais PnL em destaque
     const row2 = document.createElement('div')
     Object.assign(row2.style, {
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      fontSize: '17px',
+      display: 'flex', alignItems: dense ? 'stretch' : 'end',
+      justifyContent: 'space-between', gap: dense ? '3px' : '12px',
+      borderTop: '1px solid #263247', paddingTop: dense ? '5px' : '8px',
+      flexDirection: dense ? 'column' : 'row', minWidth: '0',
     })
-    const priceSpan = document.createElement('span')
-    Object.assign(priceSpan.style, { fontFamily: 'monospace', color: '#848e9c' })
-    priceSpan.innerHTML = `${entryStr} <span style="color:#5e6673">→</span> <span style="color:#eaecef">${currentStr}</span>`
+    const pricesRow = document.createElement('div')
+    Object.assign(pricesRow.style, { display: 'flex', alignItems: 'end', gap: dense ? '5px' : '10px', minWidth: '0' })
+    const makeQuote = (labelText, valueText, isCurrent) => {
+      const quote = document.createElement('span')
+      Object.assign(quote.style, { display: 'flex', flexDirection: 'column', gap: '3px', minWidth: '0' })
+      const label = document.createElement('small')
+      Object.assign(label.style, {
+        color: '#708099', fontSize: dense ? '9px' : spacious ? '12px' : '10px',
+        fontWeight: '700', letterSpacing: '0.1em', lineHeight: '1',
+      })
+      label.textContent = labelText
+      const value = document.createElement('span')
+      Object.assign(value.style, {
+        color: isCurrent ? '#e8edf5' : '#98a7ba',
+        fontFamily: isCurrent && valueText === 'Sem cotação' ? 'inherit' : 'monospace',
+        fontSize: dense ? '12px' : spacious ? '20px' : '15px',
+        fontWeight: isCurrent ? '600' : '400', whiteSpace: 'nowrap',
+      })
+      value.textContent = valueText
+      quote.append(label, value)
+      return quote
+    }
+    const arrow = document.createElement('span')
+    Object.assign(arrow.style, { color: '#5f7088', fontSize: '14px', paddingBottom: '1px' })
+    arrow.textContent = '→'
+    pricesRow.append(
+      makeQuote('ENTRADA', fmtPrice(p.precoEntrada), false),
+      arrow,
+      makeQuote('ATUAL', currentPrice != null ? fmtPrice(currentPrice) : 'Sem cotação', true),
+    )
 
     const pnlSpan = document.createElement('span')
     Object.assign(pnlSpan.style, {
-      fontFamily: 'monospace', fontWeight: '700', fontSize: '20px', color: pnlColor,
+      fontFamily: 'monospace', fontWeight: '800',
+      fontSize: dense ? '18px' : spacious ? '30px' : '22px',
+      color: pnlColor, whiteSpace: 'nowrap', alignSelf: dense ? 'end' : 'auto',
     })
-    pnlSpan.textContent = fmtPct(pnl)
+    pnlSpan.textContent = pnl == null ? '—' : fmtPct(pnl)
 
-    row2.append(priceSpan, pnlSpan)
+    row2.append(pricesRow, pnlSpan)
     card.append(row1, row2)
 
     grid.appendChild(card)
   }
 
   root.appendChild(grid)
+  const footer = document.createElement('div')
+  Object.assign(footer.style, {
+    height: `${FOOTER_HEIGHT}px`, flexShrink: '0', display: 'flex',
+    alignItems: 'end', justifyContent: 'space-between',
+    color: '#607089', fontSize: '11px', letterSpacing: '0.02em',
+  })
+  const footerLeft = document.createElement('span')
+  footerLeft.textContent = 'Posições abertas · preços exibidos na exportação'
+  const footerRight = document.createElement('span')
+  footerRight.textContent = 'OPERAÇÕES · PAINEL DE POSIÇÕES'
+  footer.append(footerLeft, footerRight)
+  root.appendChild(footer)
   return root
 }
 
@@ -224,26 +306,25 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
   const handleExportImage = async () => {
     if (exporting) return
     setExporting(true)
+    let exportEl
     try {
       const html2canvas = (await import('html2canvas')).default
       const positions = trades.filter(t => t.status === 'Aberta')
 
-      // Criar layout off-screen 1920×1080
-      const exportEl = buildExportDOM(positions, prices)
+      exportEl = buildExportDOM(positions, prices)
       document.body.appendChild(exportEl)
-
-      // Pequeno delay para o browser renderizar
-      await new Promise(r => setTimeout(r, 50))
+      await Promise.all([
+        exportEl.querySelector('img')?.decode().catch(() => {}),
+        document.fonts.ready,
+      ])
 
       const canvas = await html2canvas(exportEl, {
-        width: 1920, height: 1080,
-        backgroundColor: '#0a0e17',
+        width: exportEl.clientWidth, height: exportEl.clientHeight,
+        backgroundColor: '#080d17',
         scale: 1,
         useCORS: true,
         logging: false,
       })
-
-      document.body.removeChild(exportEl)
 
       const link = document.createElement('a')
       link.download = `Posicoes_Abertas_${localDateString()}.png`
@@ -252,6 +333,7 @@ export default function OpenPositions({ trades, prices, onEdit, onDelete, onSell
     } catch (err) {
       console.error('Export error:', err)
     } finally {
+      exportEl?.remove()
       setExporting(false)
     }
   }

@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { ArrowUpRight, ArrowDownRight, Filter, Plus, Download, Pencil, Trash2, ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
+import { ArrowUpRight, ArrowDownRight, Filter, Plus, Download, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, Calendar } from 'lucide-react'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { fmtUSD, fmtPct, fmtPrice, fmtDate } from '../utils/calculations'
@@ -38,16 +38,6 @@ function compareValues(a, b, key) {
 
 const MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
 
-function getExitMonths(trades) {
-  const months = new Set()
-  for (const t of trades) {
-    if (t.dataSaida && t.status === 'Fechada') {
-      months.add(t.dataSaida.slice(0, 7))
-    }
-  }
-  return [...months].sort().reverse()
-}
-
 export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport, prices, onViewAsset }) {
   const hasActions = !!(onEdit || onDelete)
   const columns = hasActions ? COLUMNS : COLUMNS.filter(c => c.key !== '_actions')
@@ -56,26 +46,48 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [exitMonth, setExitMonth] = useState('')
+  const [periodOpen, setPeriodOpen] = useState(false)
   const [monthPickerOpen, setMonthPickerOpen] = useState(false)
-  const monthPickerRef = useRef(null)
+  const periodRef = useRef(null)
   const [corretoraFilter, setCorretoraFilter] = useState(new Set())
   const [operandoOnly, setOperandoOnly] = useState(false)
   const [sortKey, setSortKey] = useState('dataEntrada')
   const [sortDir, setSortDir] = useState('desc')
   const [page, setPage] = useState(1)
 
-  const availableExitMonths = useMemo(() => getExitMonths(trades), [trades])
-
   useEffect(() => {
-    if (!monthPickerOpen) return
+    if (!periodOpen) return
     const handleClick = (e) => {
-      if (monthPickerRef.current && !monthPickerRef.current.contains(e.target)) setMonthPickerOpen(false)
+      if (!periodRef.current?.contains(e.target)) {
+        setPeriodOpen(false)
+        setMonthPickerOpen(false)
+      }
+    }
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setPeriodOpen(false)
+        setMonthPickerOpen(false)
+      }
     }
     document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [monthPickerOpen])
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [periodOpen])
 
   const exitMonthAsDate = exitMonth ? new Date(exitMonth + '-15T12:00:00') : null
+  const hasEntryPeriod = !!(dateFrom || dateTo)
+  const hasPeriodFilter = hasEntryPeriod || !!exitMonth
+  const shortDate = (value) => value ? `${value.slice(8, 10)}/${value.slice(5, 7)}/${value.slice(2, 4)}` : '…'
+  const periodLabel = hasEntryPeriod && exitMonth
+    ? 'Entrada + saída'
+    : hasEntryPeriod
+      ? `Entrada: ${shortDate(dateFrom)}–${shortDate(dateTo)}`
+      : exitMonth
+        ? `Saída: ${MONTH_NAMES[Number(exitMonth.slice(5, 7)) - 1]}/${exitMonth.slice(0, 4)}`
+        : 'Período'
 
   const handleMonthSelect = (date) => {
     if (!date) { setExitMonth(''); setPage(1); setMonthPickerOpen(false); return }
@@ -130,14 +142,39 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
     <div className="space-y-4">
       {/* Filters */}
       <div className="card space-y-3">
-        {/* Row 1: Categoria + Status */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <Filter className="w-4 h-4 text-text-muted shrink-0" />
-          <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap items-center gap-2 border-b border-border/50 pb-3">
+          <h2 className="text-sm font-semibold text-text-primary">Histórico</h2>
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+            <span className="text-text-muted text-xs mr-1">{filtered.length} {filtered.length === 1 ? 'trade' : 'trades'}</span>
+            {onExport && (
+              <button
+                onClick={() => onExport(filtered, { catFilter, statusFilter, dateFrom, dateTo, exitMonth })}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent-green/15 text-accent-green hover:bg-accent-green/25 transition-colors"
+                title="Exportar trades filtrados para Excel"
+              >
+                <Download className="w-3 h-3" /> Exportar
+              </button>
+            )}
+            {onNew && (
+              <button
+                onClick={onNew}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent-gold/15 text-accent-gold hover:bg-accent-gold/25 transition-colors"
+              >
+                <Plus className="w-3 h-3" /> Novo
+              </button>
+            )}
+          </div>
+        </div>
+        {/* Categoria e status */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <div className="flex flex-wrap items-center gap-1">
+            <Filter className="w-4 h-4 text-text-muted mr-1 shrink-0" />
+            <span className="text-[11px] text-text-muted mr-1">Categoria</span>
             {CATEGORIES.map(c => (
               <button
                 key={c}
                 onClick={() => { setCatFilter(c); setPage(1) }}
+                aria-pressed={catFilter === c}
                 className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   catFilter === c
                     ? 'bg-accent-gold/15 text-accent-gold'
@@ -148,12 +185,14 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
               </button>
             ))}
           </div>
-          <span className="text-border hidden sm:inline">|</span>
-          <div className="flex gap-1">
+          <span className="text-border hidden lg:inline">|</span>
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="text-[11px] text-text-muted mr-1">Status</span>
             {STATUSES.map(s => (
               <button
                 key={s}
                 onClick={() => { setStatusFilter(s); setPage(1) }}
+                aria-pressed={statusFilter === s}
                 className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   statusFilter === s
                     ? 'bg-accent-blue/15 text-accent-blue'
@@ -165,8 +204,9 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
             ))}
           </div>
         </div>
-        {/* Row 2: Corretoras + Operando + Ações */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t border-border/50 pt-3">
+        {/* Corretoras, Operando e período */}
+        <div className="flex flex-wrap items-center gap-1 border-t border-border/50 pt-3">
+          <span className="text-[11px] text-text-muted mr-1">Corretora</span>
           {[
             { name: 'Quantfury', active: 'bg-emerald-500/15 text-emerald-400' },
             { name: 'Hyperliquid', active: 'bg-white/10 text-white' },
@@ -176,6 +216,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
             <button
               key={b.name}
               onClick={() => { setCorretoraFilter(prev => { const next = new Set(prev); if (next.has(b.name)) next.delete(b.name); else next.add(b.name); return next }); setPage(1) }}
+              aria-pressed={corretoraFilter.has(b.name)}
               className={`px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 corretoraFilter.has(b.name)
                   ? b.active
@@ -197,81 +238,79 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
           >
             Operando
           </button>
-          <span className="text-text-muted text-xs ml-auto">{filtered.length} trades</span>
-          {onExport && (
-          <button
-            onClick={() => onExport(filtered, { catFilter, statusFilter, dateFrom, dateTo, exitMonth })}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent-green/15 text-accent-green hover:bg-accent-green/25 transition-colors"
-            title="Exportar trades filtrados para Excel"
-          >
-            <Download className="w-3 h-3" /> Exportar
-          </button>
-          )}
-          {onNew && (
-          <button
-            onClick={onNew}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent-gold/15 text-accent-gold hover:bg-accent-gold/25 transition-colors"
-          >
-            <Plus className="w-3 h-3" /> Novo
-          </button>
-          )}
-        </div>
-        {/* Row 3: Datas + Mês saída */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t border-border/50 pt-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-text-muted text-xs">De:</span>
-            <div className="w-28 sm:w-36">
-              <DateInput value={dateFrom} onChange={(v) => { setDateFrom(v); setPage(1) }} placeholder="Início" />
-            </div>
-            <span className="text-text-muted text-xs">Até:</span>
-            <div className="w-28 sm:w-36">
-              <DateInput value={dateTo} onChange={(v) => { setDateTo(v); setPage(1) }} placeholder="Fim" />
-            </div>
-            {(dateFrom || dateTo) && (
-              <button
-                onClick={() => { setDateFrom(''); setDateTo(''); setPage(1) }}
-                className="text-xs text-text-muted hover:text-accent-red transition-colors"
-                title="Limpar datas"
-              >
-                Limpar
-              </button>
-            )}
-          </div>
-          <span className="text-border hidden sm:inline">|</span>
-          <div className="flex items-center gap-2 relative">
+          <div className="relative ml-auto" ref={periodRef}>
             <button
-              onClick={() => setMonthPickerOpen(v => !v)}
+              type="button"
+              onClick={() => { setPeriodOpen(v => !v); setMonthPickerOpen(false) }}
+              aria-expanded={periodOpen}
+              aria-controls="history-period-panel"
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
-                exitMonth
+                hasPeriodFilter
                   ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/40'
                   : 'bg-bg-primary text-text-secondary border-border hover:bg-bg-hover'
               }`}
-              title="Filtrar por mês de saída"
             >
               <Calendar className="w-3 h-3" />
-              {exitMonth
-                ? `${MONTH_NAMES[parseInt(exitMonth.split('-')[1], 10) - 1]} ${exitMonth.split('-')[0]}`
-                : 'Mês saída'
-              }
+              {periodLabel}
+              <ChevronDown className={`w-3 h-3 transition-transform ${periodOpen ? 'rotate-180' : ''}`} />
             </button>
-            {exitMonth && (
-              <button
-                onClick={() => { setExitMonth(''); setPage(1) }}
-                className="text-xs text-text-muted hover:text-accent-red transition-colors"
+            {periodOpen && (
+              <div
+                id="history-period-panel"
+                className="absolute right-0 top-full mt-2 z-50 bg-bg-card border border-border rounded-xl shadow-xl p-4"
+                style={{ width: 'min(380px, calc(100vw - 48px))' }}
               >
-                ×
-              </button>
-            )}
-            {monthPickerOpen && (
-              <div ref={monthPickerRef} className="absolute left-0 top-full mt-2 z-50 bg-bg-card border border-border rounded-xl shadow-lg p-3">
-                <DatePicker
-                  inline
-                  selected={exitMonthAsDate}
-                  onChange={handleMonthSelect}
-                  showMonthYearPicker
-                  dateFormat="MM/yyyy"
-                  calendarClassName="op-calendar"
-                />
+                <div className="text-xs font-semibold text-text-primary mb-2">Data de entrada</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="text-[11px] text-text-muted min-w-0">
+                    De
+                    <DateInput value={dateFrom} onChange={(v) => { setDateFrom(v); setPage(1) }} placeholder="Início" />
+                  </label>
+                  <label className="text-[11px] text-text-muted min-w-0">
+                    Até
+                    <DateInput value={dateTo} onChange={(v) => { setDateTo(v); setPage(1) }} placeholder="Fim" />
+                  </label>
+                </div>
+                <div className="border-t border-border/50 mt-4 pt-3">
+                  <div className="text-xs font-semibold text-text-primary mb-2">Mês de saída</div>
+                  <button
+                    type="button"
+                    onClick={() => setMonthPickerOpen(v => !v)}
+                    aria-expanded={monthPickerOpen}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border ${
+                      exitMonth
+                        ? 'bg-accent-gold/15 text-accent-gold border-accent-gold/40'
+                        : 'bg-bg-primary text-text-secondary border-border hover:bg-bg-hover'
+                    }`}
+                  >
+                    <Calendar className="w-3 h-3" />
+                    {exitMonth
+                      ? `${MONTH_NAMES[Number(exitMonth.slice(5, 7)) - 1]} ${exitMonth.slice(0, 4)}`
+                      : 'Selecionar mês'
+                    }
+                  </button>
+                  {monthPickerOpen && (
+                    <div className="mt-2 bg-bg-card border border-border rounded-xl p-2">
+                      <DatePicker
+                        inline
+                        selected={exitMonthAsDate}
+                        onChange={handleMonthSelect}
+                        showMonthYearPicker
+                        dateFormat="MM/yyyy"
+                        calendarClassName="op-calendar"
+                      />
+                    </div>
+                  )}
+                </div>
+                {hasPeriodFilter && (
+                  <button
+                    type="button"
+                    onClick={() => { setDateFrom(''); setDateTo(''); setExitMonth(''); setMonthPickerOpen(false); setPage(1) }}
+                    className="mt-4 text-xs text-text-muted hover:text-accent-red transition-colors"
+                  >
+                    Limpar filtros de data
+                  </button>
+                )}
               </div>
             )}
           </div>
