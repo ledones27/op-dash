@@ -224,9 +224,11 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
                 </span>
               )}
             </span>
-            <ChevronDown className={`h-4 w-4 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`h-4 w-4 transition-transform duration-300 ease-in-out ${filtersOpen ? 'rotate-180' : ''}`} />
           </button>
-          <div id="equity-filters" className={`${filtersOpen ? 'grid' : 'hidden'} mt-3 w-full grid-cols-2 gap-2 sm:mt-0 sm:flex sm:w-auto sm:flex-wrap sm:gap-1`}>
+          <div id="equity-filters" className={`grid transition-[grid-template-rows,opacity,visibility] duration-300 ease-in-out sm:block sm:visible sm:opacity-100 ${filtersOpen ? 'grid-rows-[1fr] visible opacity-100' : 'grid-rows-[0fr] invisible opacity-0'}`}>
+            <div className="min-h-0 overflow-hidden sm:overflow-visible">
+          <div className="grid w-full grid-cols-2 gap-2 pt-3 sm:flex sm:w-auto sm:flex-wrap sm:gap-1 sm:pt-0">
           {[
             { name: 'Quantfury', active: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' },
             { name: 'Hyperliquid', active: 'bg-white/10 text-white border-white/30' },
@@ -262,6 +264,8 @@ export default function EquityCurve({ allTrades, openPositions = [] }) {
           >
             Operando
           </button>
+          </div>
+            </div>
           </div>
         </div>
         {isCustomPeriod && customFrom && (

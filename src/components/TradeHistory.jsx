@@ -142,13 +142,37 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
   return (
     <div className="-mx-4 space-y-6 sm:mx-0 sm:space-y-4">
       {/* Filters */}
-      <div className="card space-y-6 rounded-none border-x-0 border-t-0 bg-transparent px-4 sm:space-y-3 sm:rounded-xl sm:border sm:bg-bg-card">
-        <div className="flex flex-col gap-3 border-b border-border/50 pb-3 sm:flex-row sm:items-center">
+      <div className="card rounded-none border-x-0 border-t-0 bg-transparent px-4 sm:rounded-xl sm:border sm:bg-bg-card">
+        <div className="border-b border-border/50 pb-3 sm:flex sm:items-center">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold text-text-primary">Histórico</h2>
-            <span className="text-text-muted text-xs sm:hidden">{filtered.length} {filtered.length === 1 ? 'trade' : 'trades'}</span>
+            <div className="flex items-center gap-2 sm:hidden">
+              {onExport && (
+                <button
+                  type="button"
+                  onClick={() => onExport(filtered, { catFilter, statusFilter, dateFrom, dateTo, exitMonth })}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-green/15 text-accent-green transition-colors hover:bg-accent-green/25"
+                  aria-label="Exportar trades filtrados para Excel"
+                  title="Exportar"
+                >
+                  <Download className="h-4 w-4" />
+                </button>
+              )}
+              {onNew && (
+                <button
+                  type="button"
+                  onClick={onNew}
+                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-gold/15 text-accent-gold transition-colors hover:bg-accent-gold/25"
+                  aria-label="Novo trade"
+                  title="Novo trade"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2 sm:ml-auto">
+          <p className="mt-1 text-xs text-text-muted sm:hidden">{filtered.length} {filtered.length === 1 ? 'trade' : 'trades'}</p>
+          <div className="ml-auto hidden items-center gap-2 sm:flex">
             <span className="hidden text-text-muted text-xs mr-1 sm:inline">{filtered.length} {filtered.length === 1 ? 'trade' : 'trades'}</span>
             {onExport && (
               <button
@@ -169,6 +193,26 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
             )}
           </div>
         </div>
+        <button
+          type="button"
+          onClick={() => setFiltersOpen(v => !v)}
+          aria-expanded={filtersOpen}
+          aria-controls="history-filters"
+          className="mt-3 flex w-full items-center justify-between py-2 text-sm font-medium text-text-secondary sm:hidden"
+        >
+          <span className="flex items-center gap-2">
+            <SlidersHorizontal className="h-4 w-4" />
+            Filtros
+            {(catFilter !== 'Todos' || statusFilter !== 'Todos' || corretoraFilter.size > 0 || operandoOnly || hasPeriodFilter) && (
+              <span className="rounded-full bg-accent-gold/15 px-1.5 py-0.5 text-xs text-accent-gold">
+                {Number(catFilter !== 'Todos') + Number(statusFilter !== 'Todos') + corretoraFilter.size + Number(operandoOnly) + Number(hasPeriodFilter)}
+              </span>
+            )}
+          </span>
+          <ChevronDown className={`h-4 w-4 transition-transform duration-300 ease-in-out ${filtersOpen ? 'rotate-180' : ''}`} />
+        </button>
+        <div id="history-filters" className={`grid transition-[grid-template-rows,opacity,visibility] duration-300 ease-in-out sm:mt-3 sm:block sm:visible sm:opacity-100 ${filtersOpen ? 'grid-rows-[1fr] visible opacity-100' : 'grid-rows-[0fr] invisible opacity-0'}`}>
+          <div className="min-h-0 space-y-5 overflow-hidden sm:space-y-3 sm:overflow-visible">
         {/* Categoria e status */}
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-2">
           <div className="flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-1">
@@ -217,26 +261,8 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
         </div>
         {/* Corretoras, Operando e período */}
         <div className="border-t border-border/50 pt-4 sm:flex sm:flex-wrap sm:items-center sm:pt-3">
-          <button
-            type="button"
-            onClick={() => setFiltersOpen(v => !v)}
-            aria-expanded={filtersOpen}
-            aria-controls="history-broker-filters"
-            className="flex w-full items-center justify-between py-2 text-sm font-medium text-text-secondary sm:hidden"
-          >
-            <span className="flex items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4" />
-              Corretoras / Operando
-              {(corretoraFilter.size > 0 || operandoOnly) && (
-                <span className="rounded-full bg-accent-gold/15 px-1.5 py-0.5 text-xs text-accent-gold">
-                  {corretoraFilter.size + Number(operandoOnly)}
-                </span>
-              )}
-            </span>
-            <ChevronDown className={`h-4 w-4 transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
-          </button>
-          <div id="history-broker-filters" className={`${filtersOpen ? 'grid' : 'hidden'} mt-2 grid-cols-2 gap-2 sm:mt-0 sm:flex sm:flex-wrap sm:items-center sm:gap-1`}>
-          <span className="hidden text-[11px] text-text-muted sm:mr-1 sm:inline">Corretora</span>
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-1">
+          <span className="col-span-2 text-[11px] text-text-muted sm:mr-1">Corretora</span>
           {[
             { name: 'Quantfury', active: 'bg-emerald-500/15 text-emerald-400' },
             { name: 'Hyperliquid', active: 'bg-white/10 text-white' },
@@ -269,7 +295,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
             Operando
           </button>
           </div>
-          <div className="relative mt-3 border-t border-border/50 pt-3 sm:ml-auto sm:mt-0 sm:border-0 sm:pt-0" ref={periodRef}>
+          <div className="relative ml-auto hidden sm:block" ref={periodRef}>
             <button
               type="button"
               onClick={() => { setPeriodOpen(v => !v); setMonthPickerOpen(false) }}
@@ -290,7 +316,7 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
             {periodOpen && (
               <div
                 id="history-period-panel"
-                className="absolute bottom-full right-0 z-50 mb-2 rounded-xl border border-border bg-bg-card p-4 shadow-xl sm:bottom-auto sm:top-full sm:mb-0 sm:mt-2"
+                className="absolute right-0 top-full z-50 mt-2 rounded-xl border border-border bg-bg-card p-4 shadow-xl"
                 style={{ width: 'min(380px, calc(100vw - 48px))' }}
               >
                 <div className="text-xs font-semibold text-text-primary mb-2">Data de entrada</div>
@@ -346,6 +372,54 @@ export default function TradeHistory({ trades, onEdit, onDelete, onNew, onExport
                 )}
               </div>
             )}
+          </div>
+        </div>
+        <div className="border-t border-border/50 pt-4 sm:hidden">
+          <div className="mb-2 flex items-center gap-1.5 text-[11px] text-text-muted">
+            <Calendar className="h-3.5 w-3.5" /> Período
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="min-w-0 text-[11px] text-text-muted">
+              Entrada de
+              <DateInput value={dateFrom} onChange={(v) => { setDateFrom(v); setPage(1) }} placeholder="Início" />
+            </label>
+            <label className="min-w-0 text-[11px] text-text-muted">
+              Entrada até
+              <DateInput value={dateTo} onChange={(v) => { setDateTo(v); setPage(1) }} placeholder="Fim" />
+            </label>
+          </div>
+          <div className="mt-3 text-[11px] text-text-muted">Mês de saída</div>
+          <button
+            type="button"
+            onClick={() => setMonthPickerOpen(v => !v)}
+            aria-expanded={monthPickerOpen}
+            className={`mt-1 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium ${exitMonth ? 'border-accent-gold/40 bg-accent-gold/15 text-accent-gold' : 'border-border bg-bg-primary text-text-secondary'}`}
+          >
+            <Calendar className="h-3 w-3" />
+            {exitMonth ? `${MONTH_NAMES[Number(exitMonth.slice(5, 7)) - 1]} ${exitMonth.slice(0, 4)}` : 'Selecionar mês'}
+          </button>
+          {monthPickerOpen && (
+            <div className="mt-2 rounded-xl border border-border bg-bg-card p-2">
+              <DatePicker
+                inline
+                selected={exitMonthAsDate}
+                onChange={handleMonthSelect}
+                showMonthYearPicker
+                dateFormat="MM/yyyy"
+                calendarClassName="op-calendar"
+              />
+            </div>
+          )}
+          {hasPeriodFilter && (
+            <button
+              type="button"
+              onClick={() => { setDateFrom(''); setDateTo(''); setExitMonth(''); setMonthPickerOpen(false); setPage(1) }}
+              className="mt-3 text-xs text-text-muted transition-colors hover:text-accent-red"
+            >
+              Limpar filtros de data
+            </button>
+          )}
+        </div>
           </div>
         </div>
       </div>
